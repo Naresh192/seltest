@@ -76,21 +76,46 @@ try :
     # Example usage
     recommendation = sunscreen_recommender(uv_index)
     st.write(f"UV Index: {uv_index} - Recommendation: {recommendation}")
-    import numpy as np
-    import matplotlib.pyplot as plt
+    def get_uv_color(uv_index):
+    if uv_index <= 2:
+        return 'green'
+    elif uv_index <= 5:
+        return 'yellow'
+    elif uv_index <= 7:
+        return 'orange'
+    elif uv_index <= 10:
+        return 'red'
+    else:
+        return 'red'
+
+    # Function to display UV index on a reversed gradient scale with a pointer and transparent background
+    def display_uv_index(uv_index):
+        fig, ax = plt.subplots(figsize=(6, 1))
+        gradient = np.linspace(1, 0, 256)  # Reverse the gradient
+        gradient = np.vstack((gradient, gradient))
     
-    # Generate a range of numbers
-    numbers = np.linspace(0, 1, 100).reshape(10, 10)
+        ax.imshow(gradient, aspect='auto', cmap=plt.get_cmap('RdYlGn'))
+        ax.set_axis_off()
     
-    # Create a gradient image
-    plt.imshow(numbers, cmap='viridis', aspect='auto')
-    plt.colorbar()
+        color = get_uv_color(uv_index)
+        
+        # Calculate the position of the pointer
+        pointer_position = uv_index / 11.0
     
-    # Save the image
-    plt.savefig('gradient.png')
+        # Add a pointer to the gradient
+        ax.annotate('▼', xy=(pointer_position, -0.1), xycoords='axes fraction', color=color, fontsize=20, ha='center')
+        ax.text(0.5, -0.5, f'UV Index: {uv_index}', color=color, fontsize=15, ha='center', va='center', transform=ax.transAxes)
     
-    # Display the image in Streamlit
-    st.image('gradient.png')
+        # Set transparent background
+        fig.patch.set_alpha(0.0)
+        ax.patch.set_alpha(0.0)
+    
+        st.pyplot(fig)
+    
+    # Streamlit app
+    st.title("UV Index Display")
+    display_uv_index(uv_index)
+
 except :
     st.warning("Turn on Location")
 
