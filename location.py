@@ -15,10 +15,6 @@ st.markdown('''<style>iframe{
 }
 </style>''',unsafe_allow_html=True)
 
-st.markdown('''<style>div{
-    transform: translateY(-20px); /
-}
-</style>''',unsafe_allow_html=True)
 
 # JavaScript code to get the user's location and update URL parameters
 js_code = """
