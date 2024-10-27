@@ -3,6 +3,7 @@ from extra_streamlit_components import CookieManager
 import requests
 import matplotlib.pyplot as plt
 import numpy as np
+from streamlit_js_eval import streamlit_js_eval
 
 st.markdown('''<style>div[data-testid="stToolbar"] {
   visibility: hidden;
@@ -130,5 +131,7 @@ try :
 
 except :
     st.warning("Turn on Location")
-    if st.button("Refresh") :
-      st.rerun()
+
+
+if st.button("Refresh") :
+      streamlit_js_eval(js_expressions="parent.window.location.reload()")
