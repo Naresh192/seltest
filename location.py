@@ -8,7 +8,7 @@ st.markdown('''<style>div[data-testid="stToolbar"] {
   visibility: hidden;
 }</style>''',unsafe_allow_html=True)
 
-st.markdown('''<style>[class^="_link"] {
+st.markdown('''<style>[class^="_container"] {
     display: none;
 }
 }</style>''',unsafe_allow_html=True)
