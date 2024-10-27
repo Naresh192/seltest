@@ -1,6 +1,8 @@
 import streamlit as st
 from extra_streamlit_components import CookieManager
 import requests
+import matplotlib.pyplot as plt
+import numpy as np
 
 # JavaScript code to get the user's location and update URL parameters
 js_code = """
@@ -77,45 +79,44 @@ try :
     recommendation = sunscreen_recommender(uv_index)
     st.write(f"UV Index: {uv_index} - Recommendation: {recommendation}")
     def get_uv_color(uv_index):
-    if uv_index <= 2:
-        return 'green'
-    elif uv_index <= 5:
-        return 'yellow'
-    elif uv_index <= 7:
-        return 'orange'
-    elif uv_index <= 10:
-        return 'red'
-    else:
-        return 'red'
-
-    # Function to display UV index on a reversed gradient scale with a pointer and transparent background
-    def display_uv_index(uv_index):
-        fig, ax = plt.subplots(figsize=(6, 1))
-        gradient = np.linspace(1, 0, 256)  # Reverse the gradient
-        gradient = np.vstack((gradient, gradient))
+        if uv_index <= 2:
+            return 'green'
+        elif uv_index <= 5:
+            return 'yellow'
+        elif uv_index <= 7:
+            return 'orange'
+        elif uv_index <= 10:
+            return 'red'
+        else:
+            return 'red'
     
-        ax.imshow(gradient, aspect='auto', cmap=plt.get_cmap('RdYlGn'))
-        ax.set_axis_off()
-    
-        color = get_uv_color(uv_index)
+        # Function to display UV index on a reversed gradient scale with a pointer and transparent background
+        def display_uv_index(uv_index):
+            fig, ax = plt.subplots(figsize=(6, 1))
+            gradient = np.linspace(1, 0, 256)  # Reverse the gradient
+            gradient = np.vstack((gradient, gradient))
         
-        # Calculate the position of the pointer
-        pointer_position = uv_index / 11.0
-    
-        # Add a pointer to the gradient
-        ax.annotate('▼', xy=(pointer_position, -0.1), xycoords='axes fraction', color=color, fontsize=20, ha='center')
-        ax.text(0.5, -0.5, f'UV Index: {uv_index}', color=color, fontsize=15, ha='center', va='center', transform=ax.transAxes)
-    
-        # Set transparent background
-        fig.patch.set_alpha(0.0)
-        ax.patch.set_alpha(0.0)
-    
-        st.pyplot(fig)
-    
-    # Streamlit app
-    st.title("UV Index Display")
-    display_uv_index(uv_index)
+            ax.imshow(gradient, aspect='auto', cmap=plt.get_cmap('RdYlGn'))
+            ax.set_axis_off()
+        
+            color = get_uv_color(uv_index)
+            
+            # Calculate the position of the pointer
+            pointer_position = uv_index / 11.0
+        
+            # Add a pointer to the gradient
+            ax.annotate('▼', xy=(pointer_position, -0.1), xycoords='axes fraction', color=color, fontsize=20, ha='center')
+            ax.text(0.5, -0.5, f'UV Index: {uv_index}', color=color, fontsize=15, ha='center', va='center', transform=ax.transAxes)
+        
+            # Set transparent background
+            fig.patch.set_alpha(0.0)
+            ax.patch.set_alpha(0.0)
+        
+            st.pyplot(fig)
+        
+        # Streamlit app
+        st.title("UV Index Display")
+        display_uv_index(uv_index)
 
 except :
     st.warning("Turn on Location")
-
