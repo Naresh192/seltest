@@ -16,7 +16,7 @@ st.markdown('''<style>iframe{
 </style>''',unsafe_allow_html=True)
 
 st.markdown('''<style>body {
-    margin-top: -100px; /* Adjust the value as needed */
+    margin-top: -10vh; /* Adjust the value as needed */
 }</style>''',unsafe_allow_html=True)
 
 
