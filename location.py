@@ -19,6 +19,10 @@ st.markdown('''<style>iframe{
 }
 </style>''',unsafe_allow_html=True)
 
+st.markdown('''<style>.hidden {
+    display: none;
+}</style>''',unsafe_allow_html=True)
+
 st.markdown('''<style>[data-sftale="false"]{
     visibility: hidden;
 }
@@ -28,6 +32,11 @@ st.markdown('''<style>[data-sftale="false"]{
 # JavaScript code to get the user's location and update URL parameters
 js_code = """
 <script>
+document.querySelectorAll('div').forEach(div => {
+    if (!div.innerHTML.trim()) {
+        div.classList.add('hidden');
+    }
+});
 function getLocation() {
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(showPosition);
