@@ -53,7 +53,7 @@ try :
     # Example usage
     api_key = 'f3fec67a02fe41d58e8114039242710'
     uv_index = get_uv_index(api_key, lat, long)
-    st.write(f"The UV index for the location ({lat}, {long}) is {uv_index}.")
+    st.write(f"The UV index for your location is {uv_index}.")
     
     from geopy.geocoders import Photon
     
