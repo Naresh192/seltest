@@ -4,6 +4,7 @@ import requests
 import matplotlib.pyplot as plt
 import numpy as np
 from streamlit_js_eval import streamlit_js_eval
+import pandas as pd
 
 st.markdown('''<style>div[data-testid="stToolbar"] {
   visibility: hidden;
