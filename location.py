@@ -34,11 +34,14 @@ cookie_manager = CookieManager()
 # Get a cookie
 cookies = cookie_manager.get_all()
 
-lat = cookies['latitude']
-st.write("Latitude : " , lat)
-
-long = cookies['longitude']
-st.write("longitude : " , long)
+try :
+    lat = cookies['latitude']
+    st.write("Latitude : " , lat)
+    
+    long = cookies['longitude']
+    st.write("longitude : " , long)
+except :
+    st.warning("Turn on Location")
 
 import requests
 
