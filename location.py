@@ -14,7 +14,7 @@ st.markdown('''<style>[class^="_container"] {
 }
 </style>''',unsafe_allow_html=True)
 
-st.markdown('''<style>div[data-testid="stElementContainer"] {
+st.markdown('''<style>div[data-estid="stElementContainer"] {
     display: none;
 }
 </style>''',unsafe_allow_html=True)
