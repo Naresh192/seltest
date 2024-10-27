@@ -15,7 +15,7 @@ st.markdown('''<style>[class^="_container"] {
 </style>''',unsafe_allow_html=True)
 
 st.markdown('''<style>iframe{
-    display: none;
+    visibility: hidden;
 }
 </style>''',unsafe_allow_html=True)
 
