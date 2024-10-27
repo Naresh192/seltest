@@ -7,13 +7,12 @@ import numpy as np
 st.markdown('''<style>div[data-testid="stToolbar"] {
   visibility: hidden;
 }</style>''',unsafe_allow_html=True)
-hide_streamlit_style = """
-            <style>
-            #MainMenu {visibility: hidden;}
-            footer {visibility: hidden;}
-            </style>
-            """
-st.markdown(hide_streamlit_style, unsafe_allow_html=True) 
+
+st.markdown('''<style>[class^="_link"] {
+    display: none;
+}
+}</style>''',unsafe_allow_html=True)
+
 
 # JavaScript code to get the user's location and update URL parameters
 js_code = """
