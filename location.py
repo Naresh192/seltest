@@ -84,6 +84,18 @@ try :
     # Example usage
     recommendation = sunscreen_recommender(uv_index)
     st.write(f"UV Index: {uv_index} - Recommendation: {recommendation}")
+
+
+    data = {
+    'Leader': ['Latitude,Longitude'],
+    'Values': [(lat,long)]
+}
+
+    # Create a DataFrame
+    df = pd.DataFrame(data)
+    st.table(df)
+
+  
     def get_uv_color(uv_index):
         if uv_index <= 2:
             return 'green'
