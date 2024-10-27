@@ -12,7 +12,12 @@ st.markdown('''<style>div[data-testid="stToolbar"] {
 st.markdown('''<style>[class^="_container"] {
     visibility: hidden;
 }
-}</style>''',unsafe_allow_html=True)
+</style>''',unsafe_allow_html=True)
+
+t.markdown('''<style>[class^="_container"] {
+    visibility: hidden;
+}
+</style>''',unsafe_allow_html=True)
 
 
 # JavaScript code to get the user's location and update URL parameters
