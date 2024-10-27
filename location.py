@@ -10,12 +10,6 @@ st.markdown('''<style>div[data-testid="stToolbar"] {
 }</style>''',unsafe_allow_html=True)
 
 
-st.markdown('''<style>iframe{
-    visibility: hidden;
-}
-</style>''',unsafe_allow_html=True)
-
-
 # JavaScript code to get the user's location and update URL parameters
 js_code = """
 <script>
