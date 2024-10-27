@@ -14,7 +14,7 @@ st.markdown('''<style>[class^="_container"] {
 }
 </style>''',unsafe_allow_html=True)
 
-st.markdown('''<style>[data-tetid="stVerticalBlock"] {
+st.markdown('''<style>iframe{
     display: none;
 }
 </style>''',unsafe_allow_html=True)
