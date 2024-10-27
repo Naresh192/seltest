@@ -9,10 +9,6 @@ st.markdown('''<style>div[data-testid="stToolbar"] {
   visibility: hidden;
 }</style>''',unsafe_allow_html=True)
 
-st.markdown('''<style>[class^="_container"] {
-    visibility: hidden;
-}
-</style>''',unsafe_allow_html=True)
 
 st.markdown('''<style>iframe{
     visibility: hidden;
