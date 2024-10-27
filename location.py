@@ -76,7 +76,21 @@ try :
     # Example usage
     recommendation = sunscreen_recommender(uv_index)
     st.write(f"UV Index: {uv_index} - Recommendation: {recommendation}")
-
+    import numpy as np
+    import matplotlib.pyplot as plt
+    
+    # Generate a range of numbers
+    numbers = np.linspace(0, 1, 100).reshape(10, 10)
+    
+    # Create a gradient image
+    plt.imshow(numbers, cmap='viridis', aspect='auto')
+    plt.colorbar()
+    
+    # Save the image
+    plt.savefig('gradient.png')
+    
+    # Display the image in Streamlit
+    st.image('gradient.png')
 except :
     st.warning("Turn on Location")
 
