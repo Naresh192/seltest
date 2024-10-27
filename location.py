@@ -130,3 +130,5 @@ try :
 
 except :
     st.warning("Turn on Location")
+    if st.button("Refresh") :
+      st.rerun()
