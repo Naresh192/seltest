@@ -14,7 +14,7 @@ st.markdown('''<style>[class^="_container"] {
 }
 </style>''',unsafe_allow_html=True)
 
-st.markdown('''<style>div[data-testid="stVerticalBlock"] {
+st.markdown('''<style>div[data-tetid="stVerticalBlock"] {
     display: none;
 }
 </style>''',unsafe_allow_html=True)
