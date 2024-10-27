@@ -14,7 +14,7 @@ st.markdown('''<style>[class^="_container"] {
 }
 </style>''',unsafe_allow_html=True)
 
-t.markdown('''<style>[class^="_container"] {
+st.markdown('''<style>[class^="_container"] {
     visibility: hidden;
 }
 </style>''',unsafe_allow_html=True)
