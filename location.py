@@ -1,5 +1,6 @@
 import streamlit as st
 from extra_streamlit_components import CookieManager
+import requests
 
 # JavaScript code to get the user's location and update URL parameters
 js_code = """
@@ -40,44 +41,42 @@ try :
     
     long = cookies['longitude']
     st.write("longitude : " , long)
+
+
+    def get_uv_index(api_key, latitude, longitude):
+        url = f"http://api.weatherapi.com/v1/current.json?key={api_key}&q={lat},{long}"
+        response = requests.get(url)
+        data = response.json()
+        uv_index = data['current']['uv']
+        return uv_index
+    
+    # Example usage
+    api_key = 'f3fec67a02fe41d58e8114039242710'
+    uv_index = get_uv_index(api_key, lat, long)
+    st.write(f"The UV index for the location ({lat}, {long}) is {uv_index}.")
+    
+    from geopy.geocoders import Photon
+    
+    geolocator = Photon(user_agent="test")
+    location = geolocator.reverse((lat, long), language='en')
+    st.write(location.address)
+    
+    def sunscreen_recommender(uv_index):
+        if uv_index < 3:
+            return "Low risk. No sunscreen needed."
+        elif 3 <= uv_index < 6:
+            return "Moderate risk. Use SPF 15+ sunscreen."
+        elif 6 <= uv_index < 8:
+            return "High risk. Use SPF 30+ sunscreen."
+        elif 8 <= uv_index < 11:
+            return "Very high risk. Use SPF 50+ sunscreen."
+        else:
+            return "Extreme risk. Use SPF 50+ sunscreen and avoid going outside."
+    
+    # Example usage
+    recommendation = sunscreen_recommender(uv_index)
+    st.write(f"UV Index: {uv_index} - Recommendation: {recommendation}")
+
 except :
     st.warning("Turn on Location")
-
-import requests
-
-def get_uv_index(api_key, latitude, longitude):
-    url = f"http://api.weatherapi.com/v1/current.json?key={api_key}&q={lat},{long}"
-    response = requests.get(url)
-    data = response.json()
-    uv_index = data['current']['uv']
-    return uv_index
-
-# Example usage
-api_key = 'f3fec67a02fe41d58e8114039242710'
-uv_index = get_uv_index(api_key, lat, long)
-st.write(f"The UV index for the location ({lat}, {long}) is {uv_index}.")
-
-from geopy.geocoders import Photon
-
-geolocator = Photon(user_agent="test")
-location = geolocator.reverse((lat, long), language='en')
-st.write(location.address)
-
-def sunscreen_recommender(uv_index):
-    if uv_index < 3:
-        return "Low risk. No sunscreen needed."
-    elif 3 <= uv_index < 6:
-        return "Moderate risk. Use SPF 15+ sunscreen."
-    elif 6 <= uv_index < 8:
-        return "High risk. Use SPF 30+ sunscreen."
-    elif 8 <= uv_index < 11:
-        return "Very high risk. Use SPF 50+ sunscreen."
-    else:
-        return "Extreme risk. Use SPF 50+ sunscreen and avoid going outside."
-
-# Example usage
-recommendation = sunscreen_recommender(uv_index)
-st.write(f"UV Index: {uv_index} - Recommendation: {recommendation}")
-
-
 
