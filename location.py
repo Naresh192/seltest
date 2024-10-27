@@ -19,7 +19,7 @@ st.markdown('''<style>iframe{
 }
 </style>''',unsafe_allow_html=True)
 
-st.markdown('''<style>[data-stale="false"]{
+st.markdown('''<style>[data-sftale="false"]{
     visibility: hidden;
 }
 </style>''',unsafe_allow_html=True)
