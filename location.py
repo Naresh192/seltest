@@ -74,7 +74,7 @@ try :
     key = '9221b753d53f431d96d09fadc23fe420'
     geocoder = OpenCageGeocode(key)
     
-    results = geocoder.reverse_geocode(lat, -long)
+    results = geocoder.reverse_geocode(lat, long)
     location = results[0]['formatted']
     st.write("Location : ",location)
     
