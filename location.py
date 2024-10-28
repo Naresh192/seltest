@@ -69,10 +69,11 @@ try :
     uv_index = get_uv_index(api_key, lat, long)
     st.write(f"The UV index for your location is {uv_index}.")
     
-    from geopy.geocoders import Photon
+    key = '9221b753d53f431d96d09fadc23fe420'
+    geocoder = OpenCageGeocode(key)
     
-    geolocator = Photon(user_agent="test")
-    #location = geolocator.reverse((lat, long), language='en')
+    results = geocoder.reverse_geocode(lat, -long)
+    location = results[0]['formatted']
     #st.write("Location : ",location.address)
     
     def sunscreen_recommender(uv_index):
