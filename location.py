@@ -76,7 +76,7 @@ try :
     
     results = geocoder.reverse_geocode(lat, -long)
     location = results[0]['formatted']
-    st.write("Location : ",location.address)
+    st.write("Location : ",location)
     
     def sunscreen_recommender(uv_index):
         if uv_index < 3:
