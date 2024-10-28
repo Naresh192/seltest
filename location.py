@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from streamlit_js_eval import streamlit_js_eval
 import pandas as pd
+from opencage.geocoder import OpenCageGeocode
+
 
 st.markdown('''<style>div[data-testid="stToolbar"] {
   visibility: hidden;
