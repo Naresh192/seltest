@@ -72,8 +72,8 @@ try :
     from geopy.geocoders import Photon
     
     geolocator = Photon(user_agent="test")
-    location = geolocator.reverse((lat, long), language='en')
-    st.write("Location : ",location.address)
+    #location = geolocator.reverse((lat, long), language='en')
+    #st.write("Location : ",location.address)
     
     def sunscreen_recommender(uv_index):
         if uv_index < 3:
