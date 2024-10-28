@@ -15,7 +15,7 @@ st.markdown('''<style>iframe{
 }
 </style>''',unsafe_allow_html=True)
 
-st.markdown('''<style>body div:nth-child(-n+3) {
+st.markdown('''<style>body div:nth-child(-n+2) {
     display: none;
 }
 </style>''',unsafe_allow_html=True)
