@@ -7,7 +7,7 @@ import requests
 a=requests.get('https://api.visibleplanets.dev/v3?latitude=32&longitude=-98',verify=False)
 data=dict(a.json())
 # Display data
-st.title("Visible Planets Data")
+st.title("Orientation")
 for obj in data['data']:
     break
     st.subheader(obj['name'])
@@ -26,9 +26,9 @@ orientation_js = """
 function getOrientation() {
     if (window.DeviceOrientationEvent) {
         window.addEventListener('deviceorientation', function(event) {
-            var alpha = event.alpha;
-            var beta = event.beta;
-            var gamma = event.gamma;
+            var alpha = event.alpha.toFixed(2);
+            var beta = event.beta.toFixed(2);
+            var gamma = event.gamma.toFixed(2);
             document.getElementById('orientation').innerText = `Alpha: ${alpha}, Beta: ${beta}, Gamma: ${gamma}`;
         }, false);
     } else {
