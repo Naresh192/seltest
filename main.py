@@ -1,22 +1,42 @@
-from selenium import webdriver
-from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.by import By
-from selenium.webdriver.firefox.options import Options
-from selenium.webdriver.firefox.service import Service
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.support.ui import WebDriverWait
-from webdriver_manager.firefox import GeckoDriverManager
+import streamlit as st
+import json
+import pandas as pd
+import numpy as np
+import streamlit.components.v1 as components
+import requests
+a=requests.get('https://api.visibleplanets.dev/v3?latitude=32&longitude=-98',verify=False)
+data=dict(a.json())
+# Display data
+st.title("Visible Planets Data")
+for obj in data['data']:
+    st.subheader(obj['name'])
+    st.write(f"Constellation: {obj['constellation']}")
+    st.write(f"Right Ascension: {obj['rightAscension']['hours']}h {obj['rightAscension']['minutes']}m {obj['rightAscension']['seconds']}s")
+    st.write(f"Declination: {obj['declination']['degrees']}° {obj['declination']['arcminutes']}' {obj['declination']['arcseconds']}''")
+    st.write(f"Altitude: {obj['altitude']}")
+    st.write(f"Azimuth: {obj['azimuth']}")
+    st.write(f"Above Horizon: {obj['aboveHorizon']}")
+    st.write(f"Magnitude: {obj['magnitude']}")
+    st.write(f"Naked Eye Object: {obj['nakedEyeObject']}")
+    
+# JavaScript to get device orientation
+orientation_js = """
+<script>
+function getOrientation() {
+    if (window.DeviceOrientationEvent) {
+        window.addEventListener('deviceorientation', function(event) {
+            var alpha = event.alpha;
+            var beta = event.beta;
+            var gamma = event.gamma;
+            document.getElementById('orientation').innerText = `Alpha: ${alpha}, Beta: ${beta}, Gamma: ${gamma}`;
+        }, false);
+    } else {
+        document.getElementById('orientation').innerText = "Device orientation not supported.";
+    }
+}
+getOrientation();
+</script>
+<div id="orientation"></div>
+"""
 
-URL = ""
-TIMEOUT = 20
-
-st.title("Test Selenium")
-
-firefoxOptions = Options()
-firefoxOptions.add_argument("--headless")
-service = Service(GeckoDriverManager().install())
-driver = webdriver.Firefox(
-    options=firefoxOptions,
-    service=service,
-)
-driver.get(URL)
+components.html(orientation_js, height=200)
