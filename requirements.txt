@@ -1,6 +1,2 @@
-extra_streamlit_components
-geopy
-matplotlib
-streamlit_js_eval
-opencage
-
+numpy
+pandas
