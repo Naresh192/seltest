@@ -9,6 +9,7 @@ data=dict(a.json())
 # Display data
 st.title("Visible Planets Data")
 for obj in data['data']:
+    break
     st.subheader(obj['name'])
     st.write(f"Constellation: {obj['constellation']}")
     st.write(f"Right Ascension: {obj['rightAscension']['hours']}h {obj['rightAscension']['minutes']}m {obj['rightAscension']['seconds']}s")
