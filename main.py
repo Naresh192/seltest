@@ -1,6 +1,7 @@
 import streamlit as st
 import requests
 import streamlit.components.v1 as components
+import json
 
 # Fetch astronomical data
 a = requests.get('https://api.visibleplanets.dev/v3?latitude=32&longitude=-98', verify=False)
