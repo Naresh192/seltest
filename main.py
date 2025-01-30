@@ -55,7 +55,7 @@ async function startCamera() {
 startCamera();
 </script>
 <div id="orientation" style="width: 100%; height: 100%;"></div>
-<video id="video" autoplay></video>
+<video id="video" autoplay width=100% height=100%></video>
 """
 
 components.html(orientation_js, height=200)
