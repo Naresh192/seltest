@@ -45,18 +45,30 @@ async function startCamera() {
 }
 
 startCamera();
+function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma) {
+    // Convert azimuth and altitude to radians
+    const azimuthRad = azimuth * (Math.PI / 180);
+    const altitudeRad = altitude * (Math.PI / 180);
 
+    // Calculate the screen position based on device orientation
+    const x = (alpha / 360) * window.innerWidth;
+    const y = (beta / 180) * window.innerHeight;
+
+    // Adjust the position based on azimuth and altitude
+    const adjustedX = x + (azimuthRad * window.innerWidth / (2 * Math.PI));
+    const adjustedY = y - (altitudeRad * window.innerHeight / (2 * Math.PI));
+
+    return { x: adjustedX, y: adjustedY };
+}
 // Update planet positions based on device orientation
 function updatePlanetPositions(alpha, beta, gamma) {
     const planets = JSON.parse(document.getElementById('planetData').innerText);
     planets.forEach(planet => {
-        // Calculate screen position based on alpha, beta, gamma
-        // This is a simplified example, you may need more complex calculations
-        const x = (alpha / 360) * window.innerWidth;
-        const y = (beta / 180) * window.innerHeight;
+        const { azimuth, altitude } = planet;
+        const position = calculateScreenPosition(azimuth, altitude, alpha, beta, gamma);
         const planetElement = document.getElementById(planet.name);
-        planetElement.style.left = `${x}px`;
-        planetElement.style.top = `${y}px`;
+        planetElement.style.left = `${position.x}px`;
+        planetElement.style.top = `${position.y}px`;
     });
 }
 </script>
