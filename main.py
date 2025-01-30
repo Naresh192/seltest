@@ -94,4 +94,4 @@ navigator.geolocation.getCurrentPosition(async function(position) {
 """
 
 # Embed the JavaScript and HTML into the Streamlit app
-components.html(orientation_js, height=500)
+components.html(orientation_js, height=800)
