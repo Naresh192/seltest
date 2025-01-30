@@ -79,7 +79,7 @@ navigator.geolocation.getCurrentPosition(async function(position) {
     // Display the response data in the UI
     document.getElementById('responseData').innerText = JSON.stringify(data, null, 2);
     // Display planet data
-    document.getElementById('planetData').innerText = JSON.stringify(data.data);
+    //document.getElementById('planetData').innerText = JSON.stringify(data.data);
     // Create divs for each planet
     const planetOverlay = document.getElementById('planetOverlay');
     data.data.forEach(planet => {
