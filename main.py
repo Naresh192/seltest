@@ -36,6 +36,21 @@ function getOrientation() {
     }
 }
 getOrientation();
+// Access the back camera
+function startCamera() {
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: "environment" } } })
+    .then(function(stream) {
+        var video = document.createElement('video');
+        video.srcObject = stream;
+        video.play();
+        document.getElementById('orientation').appendChild(video);
+    })
+    .catch(function(err) {
+        console.log("Error: " + err);
+        document.getElementById('orientation').innerText = "Camera not supported or permission denied.";
+    });
+}
+startCamera();
 </script>
 <div id="orientation"></div>
 """
