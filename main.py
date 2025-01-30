@@ -1,16 +1,9 @@
 import streamlit as st
-import requests
 import streamlit.components.v1 as components
-import json
 
-# Fetch astronomical data
-a = requests.get('https://api.visibleplanets.dev/v3?latitude=32&longitude=-98', verify=False)
-data = dict(a.json())
-
-# Display data
 st.title("Orientation")
 
-# JavaScript for Device Orientation and Camera Access
+# JavaScript for Device Orientation, Camera Access, and API Call
 orientation_js = """
 <script>
 function getOrientation() {
@@ -45,6 +38,7 @@ async function startCamera() {
 }
 
 startCamera();
+
 function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma) {
     // Convert azimuth and altitude to radians
     const azimuthRad = azimuth * (Math.PI / 180);
@@ -60,6 +54,7 @@ function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma) {
 
     return { x: adjustedX, y: adjustedY };
 }
+
 // Update planet positions based on device orientation
 function updatePlanetPositions(alpha, beta, gamma) {
     const planets = JSON.parse(document.getElementById('planetData').innerText);
@@ -71,21 +66,28 @@ function updatePlanetPositions(alpha, beta, gamma) {
         planetElement.style.top = `${position.y}px`;
     });
 }
+
+// Get user's latitude and longitude
+navigator.geolocation.getCurrentPosition(async function(position) {
+    const latitude = position.coords.latitude;
+    const longitude = position.coords.longitude;
+
+    // Fetch astronomical data
+    const response = await fetch(`https://api.visibleplanets.dev/v3?latitude=${latitude}&longitude=${longitude}`);
+    const data = await response.json();
+
+    // Display planet data
+    document.getElementById('planetData').innerText = JSON.stringify(data.data);
+    updatePlanetPositions(0, 0, 0); // Initial update
+});
 </script>
 <div id="orientation" style="width: 100%; height: 100%;"></div>
 <video id="video" autoplay width=100% height=100%></video>
 <div id="planetOverlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
     <!-- Planet positions will be updated here -->
-    <div id="planetData" style="display: none;">{data}</div>
-    {planets_html}
+    <div id="planetData" style="display: none;"></div>
 </div>
 """
 
-# Generate HTML for planets
-planets_html = ""
-for obj in data['data']:
-    planets_html += f'<div id="{obj["name"]}" style="position: absolute; color: white;">{obj["name"]}</div>'
-st.write(planets_html)
-
 # Embed the JavaScript and HTML into the Streamlit app
-components.html(orientation_js.replace("{data}", json.dumps(data['data'])).replace("{planets_html}", planets_html), height=500)
+components.html(orientation_js, height=500)
