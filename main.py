@@ -22,63 +22,26 @@ for obj in data['data']:
     
 # JavaScript to get device orientation
 orientation_js = """
-<script>
-function getOrientation() {
-    if (window.DeviceOrientationEvent) {
-        window.addEventListener('deviceorientation', function(event) {
-            var alpha = event.alpha.toFixed(2);
-            var beta = event.beta.toFixed(2);
-            var gamma = event.gamma.toFixed(2);
-            document.getElementById('orientation').innerText = `Alpha: ${alpha}, Beta: ${beta}, Gamma: ${gamma}`;
-        }, false);
-    } else {
-        document.getElementById('orientation').innerText = "Device orientation not supported.";
-    }
-}
-getOrientation();
-// Access the back camera
-function startCamera() {
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: "environment" } } })
-    .then(function(stream) {
-        var video = document.createElement('video');
-        video.srcObject = stream;
-        video.play();
-        video.style.width = '100%'; // Ensure the video fits the div
-        video.style.height = 'auto';
-        video.style.display = 'block'; // Ensure the video is displayed
-        video.setAttribute('autoplay', '');
-        video.setAttribute('muted', '');
-        video.setAttribute('playsinline', '');
-        document.getElementById('orientation').appendChild(video);
+<video id="video" autoplay></video>
 
-        // Debugging: Display messages in the UI
-        var debugDiv = document.createElement('div');
-        debugDiv.id = 'debug';
-        document.getElementById('orientation').appendChild(debugDiv);
+    <script>
+        async function startCamera() {
+            try {
+                const constraints = {
+                    video: {
+                        facingMode: { exact: "environment" } // Use "environment" for back camera
+                    }
+                };
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                const videoElement = document.getElementById('video');
+                videoElement.srcObject = stream;
+            } catch (error) {
+                console.error('Error accessing the camera', error);
+            }
+        }
 
-        video.onloadedmetadata = function() {
-            document.getElementById('debug').innerText += 'Video metadata loaded\\n';
-            video.play();
-        };
-        video.onplay = function() {
-            document.getElementById('debug').innerText += 'Video is playing\\n';
-        };
-        video.onpause = function() {
-            document.getElementById('debug').innerText += 'Video is paused\\n';
-        };
-        video.onerror = function(e) {
-            document.getElementById('debug').innerText += 'Video error: ' + e + '\\n';
-        };
-    })
-    .catch(function(err) {
-        console.log("Error: " + err);
-        document.getElementById('orientation').innerText = "Camera not supported or permission denied.";
-    });
-}
-startCamera();
-</script>
-<div id="orientation" style="width: 100%; height: 100%;"></div>
-"""
+        startCamera();
+    </script>"""
 
 components.html(orientation_js, height=200)
 
