@@ -45,6 +45,10 @@ function startCamera() {
         video.play();
         video.style.width = '100%'; // Ensure the video fits the div
         video.style.height = 'auto';
+        video.style.display = 'block'; // Ensure the video is displayed
+        video.setAttribute('autoplay', '');
+        video.setAttribute('muted', '');
+        video.setAttribute('playsinline', '');
         document.getElementById('orientation').appendChild(video);
     })
     .catch(function(err) {
