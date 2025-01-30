@@ -88,10 +88,10 @@ navigator.geolocation.getCurrentPosition(async function(position) {
 <video id="video" autoplay width=100% height=100%></video>
 <div id="planetOverlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
     <!-- Planet positions will be updated here -->
-    <div id="planetData" style="display: none;"></div>
+    <div id="planetData" style=": none;"></div>
 </div>
 <pre id="responseData" style="background-color: #f0f0f0; padding: 10px;"></pre>
 """
 
 # Embed the JavaScript and HTML into the Streamlit app
-components.html(orientation_js, height=800)
+components.html(orientation_js, height=1600)
