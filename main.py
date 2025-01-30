@@ -50,6 +50,25 @@ function startCamera() {
         video.setAttribute('muted', '');
         video.setAttribute('playsinline', '');
         document.getElementById('orientation').appendChild(video);
+
+        // Debugging: Display messages in the UI
+        var debugDiv = document.createElement('div');
+        debugDiv.id = 'debug';
+        document.getElementById('orientation').appendChild(debugDiv);
+
+        video.onloadedmetadata = function() {
+            document.getElementById('debug').innerText += 'Video metadata loaded\\n';
+            video.play();
+        };
+        video.onplay = function() {
+            document.getElementById('debug').innerText += 'Video is playing\\n';
+        };
+        video.onpause = function() {
+            document.getElementById('debug').innerText += 'Video is paused\\n';
+        };
+        video.onerror = function(e) {
+            document.getElementById('debug').innerText += 'Video error: ' + e + '\\n';
+        };
     })
     .catch(function(err) {
         console.log("Error: " + err);
