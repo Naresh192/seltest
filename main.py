@@ -68,22 +68,21 @@ function updatePlanetPositions(alpha, beta, gamma) {
 }
 
 // Get user's latitude and longitude
-if (navigator.geolocation) {
-  navigator.geolocation.getCurrentPosition(function(position) {
+navigator.geolocation.getCurrentPosition(async function(position) {
     const latitude = position.coords.latitude;
     const longitude = position.coords.longitude;
-    console.log(`Latitude: ${latitude}, Longitude: ${longitude}`);
+
     // Fetch astronomical data
     const response = await fetch(`https://api.visibleplanets.dev/v3?latitude=${latitude}&longitude=${longitude}`);
     const data = await response.json();
 
+    // Display the response data in the UI
+    document.getElementById('responseData').innerText = JSON.stringify(data, null, 2);
+
     // Display planet data
     document.getElementById('planetData').innerText = JSON.stringify(data.data);
     updatePlanetPositions(0, 0, 0); // Initial update
-  });
-} else {
-  console.log("Geolocation is not supported by this browser.");
-}
+});
 </script>
 <div id="orientation" style="width: 100%; height: 100%;"></div>
 <video id="video" autoplay width=100% height=100%></video>
@@ -91,6 +90,7 @@ if (navigator.geolocation) {
     <!-- Planet positions will be updated here -->
     <div id="planetData" style="display: none;"></div>
 </div>
+<pre id="responseData" style="background-color: #f0f0f0; padding: 10px;"></pre>
 """
 
 # Embed the JavaScript and HTML into the Streamlit app
