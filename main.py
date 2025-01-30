@@ -43,6 +43,8 @@ function startCamera() {
         var video = document.createElement('video');
         video.srcObject = stream;
         video.play();
+        video.style.width = '100%'; // Ensure the video fits the div
+        video.style.height = 'auto';
         document.getElementById('orientation').appendChild(video);
     })
     .catch(function(err) {
