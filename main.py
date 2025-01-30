@@ -58,7 +58,7 @@ startCamera();
 <video id="video" autoplay width=100% height=100%></video>
 """
 
-components.html(orientation_js)
+components.html(orientation_js,height=500)
 
 # components.html("""
 # <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
