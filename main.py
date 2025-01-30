@@ -38,7 +38,7 @@ function getOrientation() {
 getOrientation();
 // Access the back camera
 function startCamera() {
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: "environment" } } })
+    navigator.mediaDevices.getUserMedia({ video: true })
     .then(function(stream) {
         var video = document.createElement('video');
         video.srcObject = stream;
