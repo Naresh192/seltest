@@ -45,7 +45,7 @@ async function startCamera() {
                     }
                 };
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
-                const videoElement = document.getElementById('orientation');
+                const videoElement = document.getElementById('video');
                 videoElement.srcObject = stream;
             } catch (error) {
                 console.error('Error accessing the camera', error);
