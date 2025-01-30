@@ -73,6 +73,7 @@ function updatePlanetPositions(alpha, beta, gamma) {
 planets_html = ""
 for obj in data['data']:
     planets_html += f'<div id="{obj["name"]}" style="position: absolute; color: white;">{obj["name"]}</div>'
+st.write(planet_html)
 
 # Embed the JavaScript and HTML into the Streamlit app
 components.html(orientation_js.replace("{data}", json.dumps(data['data'])).replace("{planets_html}", planets_html), height=500)
