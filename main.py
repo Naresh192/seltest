@@ -81,6 +81,16 @@ navigator.geolocation.getCurrentPosition(async function(position) {
 
     // Display planet data
     document.getElementById('planetData').innerText = JSON.stringify(data.data);
+    // Create divs for each planet
+    const planetOverlay = document.getElementById('planetOverlay');
+    data.data.forEach(planet => {
+        const planetDiv = document.createElement('div');
+        planetDiv.id = planet.name;
+        planetDiv.style.position = 'absolute';
+        planetDiv.style.color = 'white';
+        planetDiv.innerText = planet.name;
+        planetOverlay.appendChild(planetDiv);
+    });
     updatePlanetPositions(0, 0, 0); // Initial update
 });
 </script>
