@@ -54,7 +54,7 @@ function startCamera() {
 }
 startCamera();
 </script>
-<div id="orientation"></div>
+<div id="orientation" style="width: 100%; height: 100%;"></div>;
 """
 
 components.html(orientation_js, height=200)
