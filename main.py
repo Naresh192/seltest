@@ -45,7 +45,7 @@ async function startCamera() {
                     }
                 };
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
-                const videoElement = document.getElementById('orientation');
+                const videoElement = document.getElementById('video');
                 videoElement.srcObject = stream;
             } catch (error) {
                 console.error('Error accessing the camera', error);
@@ -55,6 +55,7 @@ async function startCamera() {
 startCamera();
 </script>
 <div id="orientation" style="width: 100%; height: 100%;"></div>
+<div id="video" style="width: 100%; height: 100%;"></div>
 """
 
 components.html(orientation_js, height=200)
