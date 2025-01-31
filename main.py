@@ -7,6 +7,7 @@ st.title("Orientation")
 orientation_js = """
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script>
+  try {
     // Initialize scene, camera, and renderer
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -57,6 +58,9 @@ orientation_js = """
     
     // Start the render loop
     animate();
+    } catch (error) {
+        document.getElementById('fov').innerText = error;
+    }
   </script>
 <script>
 function getOrientation() {
