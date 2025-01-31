@@ -34,8 +34,8 @@ orientation_js = """
       // Output the FOV values
       console.log(`Vertical FOV: ${verticalFOV}°`);
       console.log(`Horizontal FOV: ${horizontalFOV.toFixed(2)}°`);
-      document.getElementById('fov').innerText += verticalFOV;
-      document.getElementById('fov').innerText += horizontalFOV.toFixed(2);
+      document.getElementById('fov').innerText = verticalFOV;
+      document.getElementById('fov').innerText = horizontalFOV.toFixed(2);
     }
 
     // Update the camera on window resize
