@@ -5,7 +5,21 @@ st.title("Orientation")
 
 # JavaScript for Device Orientation, Camera Access, and API Call
 orientation_js = """
-<script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js">
+import * as THREE from 'three';
+// Assuming you have a perspective camera
+const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+
+// Vertical FOV (in degrees)
+const verticalFOV = camera.fov;
+
+// Horizontal FOV (in degrees)
+const aspectRatio = camera.aspect;
+const horizontalFOV = 2 * Math.atan(Math.tan(THREE.Math.degToRad(verticalFOV) / 2) * aspectRatio) * (180 / Math.PI);
+document.getElementById('fov').innerText += verticalFOV;
+document.getElementById('fov').innerText += horizontalFOV;
+console.log(`Vertical FOV: ${verticalFOV} degrees`);
+console.log(`Horizontal FOV: ${horizontalFOV} degrees`);
 function getOrientation() {
     if (window.DeviceOrientationEvent) {
         window.addEventListener('deviceorientation', function(event) {
@@ -94,6 +108,7 @@ navigator.geolocation.getCurrentPosition(async function(position) {
 });
 </script>
 <div id="orientation" style="background-color: #f0f0f0; padding: 10px;"></div>
+<div id="fov" style="background-color: #f0f0f0; padding: 10px;"></div>
 <video id="video" autoplay width=100% height=100%></video>
 <div id="planetOverlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
     <!-- Planet positions will be updated here -->
