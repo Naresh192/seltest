@@ -18,7 +18,7 @@ orientation_js = """
     function calculateFOV() {
       // Get the aspect ratio (width / height)
       const aspectRatio = window.innerWidth / window.innerHeight;
-
+      document.getElementById('fov').innerText = window.innerWidth;
       // Get the camera's vertical FOV (in degrees)
       const verticalFOV = camera.fov; // This is in degrees
 
