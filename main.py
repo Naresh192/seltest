@@ -151,7 +151,7 @@ navigator.geolocation.getCurrentPosition(async function(position) {
 });
 </script>
 <div id="orientation" style="background-color: #f0f0f0; padding: 10px;"></div>
-<div id="fov" style="background-color: red; padding: 10px;"></div>
+<div id="fov" style="position: absolute; top: 0;background-color: red; left: 0; width: 100%; height: 100%;"></div>
 <video id="video" autoplay width=100% height=100%></video>
 <div id="planetOverlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
     <!-- Planet positions will be updated here -->
