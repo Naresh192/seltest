@@ -5,63 +5,6 @@ st.title("Orientation")
 
 # JavaScript for Device Orientation, Camera Access, and API Call
 orientation_js = """
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script>
-  try {
-    // Initialize scene, camera, and renderer
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
-
-    // Function to calculate FOV
-    function calculateFOV() {
-      // Get the aspect ratio (width / height)
-      const aspectRatio = window.innerWidth / window.innerHeight;
-      document.getElementById('fov').innerText = window.innerWidth;
-      // Get the camera's vertical FOV (in degrees)
-      const verticalFOV = camera.fov; // This is in degrees
-
-      // Convert vertical FOV to radians
-      const verticalFOVRad = THREE.MathUtils.degToRad(verticalFOV);
-
-      // Calculate the horizontal FOV using the formula
-      const horizontalFOVRad = 2 * Math.atan(Math.tan(verticalFOVRad / 2) * aspectRatio);
-
-      // Convert horizontal FOV back to degrees
-      const horizontalFOV = THREE.MathUtils.radToDeg(horizontalFOVRad);
-
-      // Output the FOV values
-      console.log(`Vertical FOV: ${verticalFOV}°`);
-      console.log(`Horizontal FOV: ${horizontalFOV.toFixed(2)}°`);
-      document.getElementById('fov').innerText = verticalFOV;
-      document.getElementById('fov').innerText = horizontalFOV.toFixed(2);
-    }
-
-    // Update the camera on window resize
-    window.addEventListener('resize', () => {
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      calculateFOV();  // Recalculate FOV after resize
-    });
-
-    // Example render loop
-    function animate() {
-      requestAnimationFrame(animate);
-      renderer.render(scene, camera);
-    }
-
-    // Initial FOV calculation
-    calculateFOV();
-    
-    // Start the render loop
-    animate();
-    } catch (error) {
-        document.getElementById('fov').innerText = error;
-    }
-  </script>
 <script>
 function getOrientation() {
     if (window.DeviceOrientationEvent) {
