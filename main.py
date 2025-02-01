@@ -43,7 +43,6 @@ async function startCamera() {
 startCamera();
 
 function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVertical,fovHorizontal) {
-    document.getElementById('pov').innerText = 'hello';
     windowWidth = window.innerWidth;
     windowHeight = window.innerHeight;
     // Convert azimuth and altitude to radians
@@ -55,7 +54,6 @@ function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVerti
     const x = r * Math.cos(altitudeRad) * Math.sin(azimuthRad);
     const y = r * Math.sin(altitudeRad);
     const z = r * Math.cos(altitudeRad) * Math.cos(azimuthRad);
-    document.getElementById('pov').innerText = x;
     
     // Step 2: Rotate the coordinates based on the device orientation (alpha, beta, gamma)
     const alphaRad = alpha * Math.PI / 180;
@@ -100,6 +98,7 @@ function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVerti
     const screenY = -(yRot / zRot) * Math.tan(fovVerticalRad / 2) * windowHeight / 2 + windowHeight / 2;
 
     // Return the calculated screen coordinates
+    document.getElementById('pov').innerText = { x: screenX, y: screenY };
     return { x: screenX, y: screenY };
 }
 
