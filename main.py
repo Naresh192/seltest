@@ -141,6 +141,7 @@ function planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, fovVertical
 
 
 function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVertical,fovHorizontal) {
+    document.getElementById('pov').innerText += (azimuth+','+altitude+','+alpha+','+beta+','+gamma+','+56+','+70)
     windowWidth = window.innerWidth;
     windowHeight = window.innerHeight;
     // Convert azimuth and altitude to radians
@@ -203,7 +204,6 @@ function updatePlanetPositions(alpha, beta, gamma) {
     const planets = JSON.parse(document.getElementById('planetData').innerText);
     planets.forEach(planet => {
         const { azimuth, altitude } = planet;
-        document.getElementById('pov').innerText += (azimuth+','+altitude+','+alpha+','+beta+','+gamma+','+56+','+70);
         const position = planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, 56, 70);
         const planetElement = document.getElementById(planet.name);
         planetElement.style.left = `${position.x}px`;
