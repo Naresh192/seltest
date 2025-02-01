@@ -42,6 +42,41 @@ async function startCamera() {
 
 startCamera();
 
+function multiplyMatrices(A, B) {
+    // Ensure the matrices can be multiplied (number of columns in A must equal number of rows in B)
+    if (A[0].length !== B.length) {
+        throw new Error("Matrices cannot be multiplied due to incompatible dimensions.");
+    }
+
+    const result = [];
+    for (let i = 0; i < A.length; i++) {
+        result[i] = [];
+        for (let j = 0; j < B[0].length; j++) {
+            result[i][j] = 0;
+            for (let k = 0; k < A[0].length; k++) {
+                result[i][j] += A[i][k] * B[k][j];
+            }
+        }
+    }
+    return result;
+}
+
+// Matrix-vector multiplication: A * v
+function multiplyMatrixVector(A, v) {
+    if (A[0].length !== v.length) {
+        throw new Error("Matrix and vector dimensions do not match.");
+    }
+
+    const result = [];
+    for (let i = 0; i < A.length; i++) {
+        result[i] = 0;
+        for (let j = 0; j < A[i].length; j++) {
+            result[i] += A[i][j] * v[j];
+        }
+    }
+    return result;
+}
+
 function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVertical,fovHorizontal) {
     windowWidth = window.innerWidth;
     windowHeight = window.innerHeight;
@@ -78,8 +113,9 @@ function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVerti
         [-Math.sin(gammaRad), 0, Math.cos(gammaRad)]
     ];
     // Combined rotation matrix: R = Rz * Ry * Rx
-    document.getElementById('pov').innerText = Rx;
     const rotationMatrix = multiplyMatrices(multiplyMatrices(Rz, Ry), Rx);
+    document.getElementById('pov').innerText = Rx;
+    
 
     // Rotate the Cartesian coordinates using the rotation matrix
     const rotatedCoords = multiplyMatrixVector(rotationMatrix, [x, y, z]);
