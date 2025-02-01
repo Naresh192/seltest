@@ -96,8 +96,9 @@ async function getPlanetDistance(planetName) {
   }
 }
 
-function planetToScreenCoords(azimuth, altitude, 1, alpha, beta, gamma, fovHorizontal, fovVertical) {
+function planetToScreenCoords(azimuth, altitude, r, alpha, beta, gamma, fovHorizontal, fovVertical) {
     // Convert azimuth and altitude to radians
+    r=1
     const video = document.getElementById('video');
     const windowWidth = video.videoWidth;
     const windowHeight = video.videoHeight;
