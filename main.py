@@ -77,6 +77,101 @@ function multiplyMatrixVector(A, v) {
     return result;
 }
 
+
+function planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, fovVertical, fovHorizontal) {
+  // Convert azimuth and altitude to radians
+  windowWidth = window.innerWidth;
+  windowHeight = window.innerHeight;
+  const azimuthRad = azimuth * Math.PI / 180;
+  const altitudeRad = altitude * Math.PI / 180;
+
+  // Step 1: Compute the direction vector of the planet in 3D space
+  const x = Math.cos(altitudeRad) * Math.sin(azimuthRad);
+  const y = Math.sin(altitudeRad);
+  const z = Math.cos(altitudeRad) * Math.cos(azimuthRad);
+
+  // Step 2: Apply device orientation (rotation of the vector)
+  // Convert alpha, beta, gamma to radians
+  const alphaRad = alpha * Math.PI / 180;
+  const betaRad = beta * Math.PI / 180;
+  const gammaRad = gamma * Math.PI / 180;
+
+  // Rotation matrix for yaw (alpha), pitch (beta), and roll (gamma)
+  const rotationMatrix = [
+    // Yaw rotation (alpha)
+    [Math.cos(alphaRad), -Math.sin(alphaRad), 0],
+    [Math.sin(alphaRad), Math.cos(alphaRad), 0],
+    [0, 0, 1]
+  ];
+
+  const pitchMatrix = [
+    // Pitch rotation (beta)
+    [Math.cos(betaRad), 0, Math.sin(betaRad)],
+    [0, 1, 0],
+    [-Math.sin(betaRad), 0, Math.cos(betaRad)]
+  ];
+
+  const rollMatrix = [
+    // Roll rotation (gamma)
+    [1, 0, 0],
+    [0, Math.cos(gammaRad), -Math.sin(gammaRad)],
+    [0, Math.sin(gammaRad), Math.cos(gammaRad)]
+  ];
+
+  // Multiply the matrices to get the final rotation matrix
+  const rotatedVector = rotateVector(x, y, z, rotationMatrix, pitchMatrix, rollMatrix);
+
+  // Step 3: Project the rotated 3D vector onto the 2D camera plane
+  const [rx, ry, rz] = rotatedVector;
+
+  // FOV and aspect ratio adjustments
+  const aspectRatio = windowWidth / windowHeight;
+  const fovHorizontalRad = fovHorizontal * Math.PI / 180;
+  const fovVerticalRad = fovVertical * Math.PI / 180;
+
+  // Use the perspective projection formula
+  const xProjection = rx / rz * (windowWidth / 2) / Math.tan(fovHorizontalRad / 2);
+  const yProjection = ry / rz * (windowHeight / 2) / Math.tan(fovVerticalRad / 2);
+
+  // Convert to screen coordinates (offset for center of the screen)
+  const screenX = windowWidth / 2 + xProjection;
+  const screenY = windowHeight / 2 - yProjection; // Invert Y to match typical screen coordinates
+
+  return { x: screenX, y: screenY };
+}
+
+function rotateVector(x, y, z, rotationMatrix, pitchMatrix, rollMatrix) {
+  // Multiply matrices together to apply all rotations
+  const result = multiplyMatrices(rotationMatrix, pitchMatrix, rollMatrix);
+  
+  // Apply the final rotation
+  const rotatedX = result[0][0] * x + result[0][1] * y + result[0][2] * z;
+  const rotatedY = result[1][0] * x + result[1][1] * y + result[1][2] * z;
+  const rotatedZ = result[2][0] * x + result[2][1] * y + result[2][2] * z;
+  
+  return [rotatedX, rotatedY, rotatedZ];
+}
+
+function multiplyMatrices(m1, m2, m3) {
+  // Multiply the three matrices to apply all rotations in sequence
+  const intermediate = matrixMultiply(m1, m2);
+  return matrixMultiply(intermediate, m3);
+}
+
+function matrixMultiply(m1, m2) {
+  const result = [];
+  for (let i = 0; i < m1.length; i++) {
+    result[i] = [];
+    for (let j = 0; j < m2[0].length; j++) {
+      result[i][j] = 0;
+      for (let k = 0; k < m1[0].length; k++) {
+        result[i][j] += m1[i][k] * m2[k][j];
+      }
+    }
+  }
+  return result;
+}
+
 function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVertical,fovHorizontal) {
     windowWidth = window.innerWidth;
     windowHeight = window.innerHeight;
@@ -141,7 +236,7 @@ function updatePlanetPositions(alpha, beta, gamma) {
     const planets = JSON.parse(document.getElementById('planetData').innerText);
     planets.forEach(planet => {
         const { azimuth, altitude } = planet;
-        const position = calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, 56, 70);
+        const position = planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, 56, 70);
         const planetElement = document.getElementById(planet.name);
         planetElement.style.left = `${position.x}px`;
         planetElement.style.top = `${position.y}px`;
