@@ -42,40 +42,38 @@ async function startCamera() {
 
 startCamera();
 
-function multiplyMatrices(A, B) {
-    // Ensure the matrices can be multiplied (number of columns in A must equal number of rows in B)
-    if (A[0].length !== B.length) {
-        throw new Error("Matrices cannot be multiplied due to incompatible dimensions.");
-    }
-
-    const result = [];
-    for (let i = 0; i < A.length; i++) {
-        result[i] = [];
-        for (let j = 0; j < B[0].length; j++) {
-            result[i][j] = 0;
-            for (let k = 0; k < A[0].length; k++) {
-                result[i][j] += A[i][k] * B[k][j];
-            }
-        }
-    }
-    return result;
+function rotateVector(x, y, z, rotationMatrix, pitchMatrix, rollMatrix) {
+  // Multiply matrices together to apply all rotations
+  const result = multiplyMatrices(rotationMatrix, pitchMatrix, rollMatrix);
+  
+  // Apply the final rotation
+  const rotatedX = result[0][0] * x + result[0][1] * y + result[0][2] * z;
+  const rotatedY = result[1][0] * x + result[1][1] * y + result[1][2] * z;
+  const rotatedZ = result[2][0] * x + result[2][1] * y + result[2][2] * z;
+  
+  return [rotatedX, rotatedY, rotatedZ];
 }
 
-// Matrix-vector multiplication: A * v
-function multiplyMatrixVector(A, v) {
-    if (A[0].length !== v.length) {
-        throw new Error("Matrix and vector dimensions do not match.");
-    }
-
-    const result = [];
-    for (let i = 0; i < A.length; i++) {
-        result[i] = 0;
-        for (let j = 0; j < A[i].length; j++) {
-            result[i] += A[i][j] * v[j];
-        }
-    }
-    return result;
+function multiplyMatrices(m1, m2, m3) {
+  // Multiply the three matrices to apply all rotations in sequence
+  const intermediate = matrixMultiply(m1, m2);
+  return matrixMultiply(intermediate, m3);
 }
+
+function matrixMultiply(m1, m2) {
+  const result = [];
+  for (let i = 0; i < m1.length; i++) {
+    result[i] = [];
+    for (let j = 0; j < m2[0].length; j++) {
+      result[i][j] = 0;
+      for (let k = 0; k < m1[0].length; k++) {
+        result[i][j] += m1[i][k] * m2[k][j];
+      }
+    }
+  }
+  return result;
+}
+
 
 
 function planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, fovVertical, fovHorizontal) {
@@ -140,37 +138,6 @@ function planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, fovVertical
   return { x: screenX, y: screenY };
 }
 
-function rotateVector(x, y, z, rotationMatrix, pitchMatrix, rollMatrix) {
-  // Multiply matrices together to apply all rotations
-  const result = multiplyMatrices(rotationMatrix, pitchMatrix, rollMatrix);
-  
-  // Apply the final rotation
-  const rotatedX = result[0][0] * x + result[0][1] * y + result[0][2] * z;
-  const rotatedY = result[1][0] * x + result[1][1] * y + result[1][2] * z;
-  const rotatedZ = result[2][0] * x + result[2][1] * y + result[2][2] * z;
-  
-  return [rotatedX, rotatedY, rotatedZ];
-}
-
-function multiplyMatrices(m1, m2, m3) {
-  // Multiply the three matrices to apply all rotations in sequence
-  const intermediate = matrixMultiply(m1, m2);
-  return matrixMultiply(intermediate, m3);
-}
-
-function matrixMultiply(m1, m2) {
-  const result = [];
-  for (let i = 0; i < m1.length; i++) {
-    result[i] = [];
-    for (let j = 0; j < m2[0].length; j++) {
-      result[i][j] = 0;
-      for (let k = 0; k < m1[0].length; k++) {
-        result[i][j] += m1[i][k] * m2[k][j];
-      }
-    }
-  }
-  return result;
-}
 
 function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVertical,fovHorizontal) {
     windowWidth = window.innerWidth;
