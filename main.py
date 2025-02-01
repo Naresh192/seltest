@@ -80,7 +80,6 @@ function planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, fovVertical
   // Convert azimuth and altitude to radians
   windowWidth = window.innerWidth;
   windowHeight = window.innerHeight;
-  document.getElementById('pov').innerText += (azimuth+','+altitude+','+alpha+','+beta+','+gamma+','+56+','+70)
   const azimuthRad = azimuth * Math.PI / 180;
   const altitudeRad = altitude * Math.PI / 180;
 
@@ -94,6 +93,7 @@ function planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, fovVertical
   const alphaRad = alpha * Math.PI / 180;
   const betaRad = beta * Math.PI / 180;
   const gammaRad = gamma * Math.PI / 180;
+  document.getElementById('pov').innerText += (azimuth+','+altitude+','+alpha+','+beta+','+gamma+','+56+','+70)
 
   // Rotation matrix for yaw (alpha), pitch (beta), and roll (gamma)
   const rotationMatrix = [
