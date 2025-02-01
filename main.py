@@ -77,67 +77,36 @@ function matrixMultiply(m1, m2) {
 
 
 function planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, fovVertical, fovHorizontal) {
-  // Convert azimuth and altitude to radians
-  windowWidth = window.innerWidth;
-  windowHeight = window.innerHeight;
-  const azimuthRad = azimuth * Math.PI / 180;
-  const altitudeRad = altitude * Math.PI / 180;
+    // Convert azimuth and altitude to radians
+    windowWidth = window.innerWidth;
+    windowHeight = window.innerHeight;
+    const alphaRad = alpha * Math.PI / 180;
+    const betaRad = beta * Math.PI / 180;
+    const gammaRad = gamma * Math.PI / 180;
 
-  // Step 1: Compute the direction vector of the planet in 3D space
-  const x = Math.cos(altitudeRad) * Math.sin(azimuthRad);
-  const y = Math.sin(altitudeRad);
-  const z = Math.cos(altitudeRad) * Math.cos(azimuthRad);
+    // Adjust azimuth (horizontal rotation effect)
+    let adjustedAzimuth = azimuth - alpha; // alpha represents yaw (rotation around vertical axis)
 
-  // Step 2: Apply device orientation (rotation of the vector)
-  // Convert alpha, beta, gamma to radians
-  const alphaRad = alpha * Math.PI / 180;
-  const betaRad = beta * Math.PI / 180;
-  const gammaRad = gamma * Math.PI / 180;
+    // Adjust altitude (vertical rotation effect)
+    let adjustedAltitude = altitude - beta; // beta represents pitch (rotation around horizontal axis)
 
-  // Rotation matrix for yaw (alpha), pitch (beta), and roll (gamma)
-  const rotationMatrix = [
-    // Yaw rotation (alpha)
-    [Math.cos(alphaRad), -Math.sin(alphaRad), 0],
-    [Math.sin(alphaRad), Math.cos(alphaRad), 0],
-    [0, 0, 1]
-  ];
+    // Step 2: Convert the adjusted azimuth and altitude to normalized 3D coordinates (on the unit sphere)
+    const azimuthRad = adjustedAzimuth * Math.PI / 180;
+    const altitudeRad = adjustedAltitude * Math.PI / 180;
 
-  const pitchMatrix = [
-    // Pitch rotation (beta)
-    [Math.cos(betaRad), 0, Math.sin(betaRad)],
-    [0, 1, 0],
-    [-Math.sin(betaRad), 0, Math.cos(betaRad)]
-  ];
+    const x3D = Math.cos(altitudeRad) * Math.sin(azimuthRad);
+    const y3D = Math.sin(altitudeRad);
+    const z3D = Math.cos(altitudeRad) * Math.cos(azimuthRad);
 
-  const rollMatrix = [
-    // Roll rotation (gamma)
-    [1, 0, 0],
-    [0, Math.cos(gammaRad), -Math.sin(gammaRad)],
-    [0, Math.sin(gammaRad), Math.cos(gammaRad)]
-  ];
+    // Step 3: Apply a basic perspective projection (simplified)
+    const fovRadVertical = fovVertical * Math.PI / 180;
+    const fovRadHorizontal = fovHorizontal * Math.PI / 180;
 
-  // Multiply the matrices to get the final rotation matrix
-  const rotatedVector = rotateVector(x, y, z, rotationMatrix, pitchMatrix, rollMatrix);
-  document.getElementById('pov').innerText += (azimuth+','+altitude+','+alpha+','+beta+','+gamma+','+56+','+70)
+    // Project 3D to 2D coordinates
+    const screenX = (x3D / z3D) * (windowWidth / 2 / Math.tan(fovRadHorizontal / 2)) + windowWidth / 2;
+    const screenY = -(y3D / z3D) * (windowHeight / 2 / Math.tan(fovRadVertical / 2)) + windowHeight / 2;
 
-  // Step 3: Project the rotated 3D vector onto the 2D camera plane
-  const [rx, ry, rz] = rotatedVector;
-
-  // FOV and aspect ratio adjustments
-  const aspectRatio = windowWidth / windowHeight;
-  const fovHorizontalRad = fovHorizontal * Math.PI / 180;
-  const fovVerticalRad = fovVertical * Math.PI / 180;
-
-  // Use the perspective projection formula
-  const xProjection = rx / rz * (windowWidth / 2) / Math.tan(fovHorizontalRad / 2);
-  const yProjection = ry / rz * (windowHeight / 2) / Math.tan(fovVerticalRad / 2);
-
-  // Convert to screen coordinates (offset for center of the screen)
-  const screenX = windowWidth / 2 + xProjection;
-  const screenY = windowHeight / 2 - yProjection; // Invert Y to match typical screen coordinates
-
-  return { x: screenX, y: screenY };
-}
+    return { x: screenX, y: screenY };
 
 
 function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVertical,fovHorizontal) {
