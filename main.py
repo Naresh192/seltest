@@ -213,9 +213,8 @@ function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVerti
 function updatePlanetPositions(alpha, beta, gamma) {
     const planets = JSON.parse(document.getElementById('planetData').innerText);
     planets.forEach(planet => {
-        const { azimuth, altitude } = planet;
-        distance = getPlanetDistance(planet.name)
-        const position = planetToScreenCoords(azimuth, altitude, distance, alpha, beta, gamma, 56, 70);
+        const { azimuth, altitude ,meanradius} = planet;
+        const position = planetToScreenCoords(azimuth, altitude, meanradius, alpha, beta, gamma, 56, 70);
         const planetElement = document.getElementById(planet.name);
         planetElement.style.left = `${position.x}px`;
         planetElement.style.top = `${position.y}px`;
