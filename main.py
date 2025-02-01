@@ -93,7 +93,6 @@ function planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, fovVertical
   const alphaRad = alpha * Math.PI / 180;
   const betaRad = beta * Math.PI / 180;
   const gammaRad = gamma * Math.PI / 180;
-  document.getElementById('pov').innerText += (azimuth+','+altitude+','+alpha+','+beta+','+gamma+','+56+','+70)
 
   // Rotation matrix for yaw (alpha), pitch (beta), and roll (gamma)
   const rotationMatrix = [
@@ -119,6 +118,7 @@ function planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, fovVertical
 
   // Multiply the matrices to get the final rotation matrix
   const rotatedVector = rotateVector(x, y, z, rotationMatrix, pitchMatrix, rollMatrix);
+  document.getElementById('pov').innerText += (azimuth+','+altitude+','+alpha+','+beta+','+gamma+','+56+','+70)
 
   // Step 3: Project the rotated 3D vector onto the 2D camera plane
   const [rx, ry, rz] = rotatedVector;
