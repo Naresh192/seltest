@@ -78,6 +78,7 @@ function matrixMultiply(m1, m2) {
 
 function planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, fovVertical, fovHorizontal) {
   // Convert azimuth and altitude to radians
+  document.getElementById('pov').innerText = azimuth;
   windowWidth = window.innerWidth;
   windowHeight = window.innerHeight;
   const azimuthRad = azimuth * Math.PI / 180;
@@ -176,7 +177,6 @@ function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVerti
     ];
     // Combined rotation matrix: R = Rz * Ry * Rx
     const rotationMatrix = multiplyMatrices(multiplyMatrices(Rz, Ry), Rx);
-    document.getElementById('pov').innerText = Rx;
     
 
     // Rotate the Cartesian coordinates using the rotation matrix
