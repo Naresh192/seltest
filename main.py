@@ -88,7 +88,7 @@ function updatePlanetPositions(alpha, beta, gamma) {
     const planets = JSON.parse(document.getElementById('planetData').innerText);
     planets.forEach(planet => {
         const { azimuth, altitude } = planet;
-        const position = calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, 70, 56);
+        const position = calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, 56, 70);
         const planetElement = document.getElementById(planet.name);
         planetElement.style.left = `${position.x}px`;
         planetElement.style.top = `${position.y}px`;
