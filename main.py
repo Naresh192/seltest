@@ -124,7 +124,7 @@ function planetToScreenCoords(azimuth, altitude, distance, alpha, beta, gamma, f
     let alphaRad = alpha * Math.PI / 180;
     let betaRad = beta * Math.PI / 180;
     let gammaRad = gamma * Math.PI / 180;
-
+    document.getElementById('pov').innerText = distance;
     // Rotation matrices (simplified, use more advanced ones for more accurate results)
     let rotX = [
         [1, 0, 0],
@@ -156,7 +156,6 @@ function planetToScreenCoords(azimuth, altitude, distance, alpha, beta, gamma, f
     // Step 3: Apply perspective projection
     let screenX = (x / z) * fovX * windowWidth / 2 + windowWidth / 2;
     let screenY = (y / z) * fovY * windowHeight / 2 + windowHeight / 2;
-    document.getElementById('pov').innerText = distance;
     return { x: screenX, y: screenY };
 }
 
