@@ -93,8 +93,8 @@ function planetToScreenCoords(planetAzimuth,   // Planet azimuth in degrees (0 t
     // Convert planet spherical coordinates (azimuth, altitude) to Cartesian coordinates
     const azimuthRad = toRad(planetAzimuth);
     const altitudeRad = toRad(planetAltitude);
-    const planetX = Math.cos(altitudeRad) * Math.cos(azimuthRad);
-    const planetY = Math.cos(altitudeRad) * Math.sin(azimuthRad);
+    const planetY = Math.cos(altitudeRad) * Math.cos(azimuthRad);
+    const planetX = Math.cos(altitudeRad) * Math.sin(azimuthRad);
     const planetZ = Math.sin(altitudeRad);
 
     // Device orientation rotation matrix (Z-X-Y order)
