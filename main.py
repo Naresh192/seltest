@@ -150,9 +150,9 @@ function planetToScreenCoords(azimuth, altitude, distance, alpha, beta, gamma, f
     x = rotated[0];
     y = rotated[1];
     z = rotated[2];
-    document.getElementById('pov').innerText = distance;
     // Step 3: Apply perspective projection
     let screenX = (x / z) * fovX * windowWidth / 2 + windowWidth / 2;
+    document.getElementById('pov').innerText = distance;
     let screenY = (y / z) * fovY * windowHeight / 2 + windowHeight / 2;
     return { x: screenX, y: screenY };
 }
