@@ -82,16 +82,16 @@ function planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, fovVertical
     const windowWidth = video.videoWidth;
     const windowHeight = video.videoHeight;
     const alphaRad = alpha * Math.PI / 180;
-    const azimuth = azimuth * Math.PI / 180;
-    const altitude = altitude * Math.PI / 180;
+    const azimuth2 = azimuth * Math.PI / 180;
+    const altitude2 = altitude * Math.PI / 180;
     const betaRad = beta * Math.PI / 180;
     const gammaRad = gamma * Math.PI / 180;
 
     // Adjust azimuth (horizontal rotation effect)
-    let adjustedAzimuth = azimuth - alpha; // alpha represents yaw (rotation around vertical axis)
+    let adjustedAzimuth = azimuth2 - alpha; // alpha represents yaw (rotation around vertical axis)
 
     // Adjust altitude (vertical rotation effect)
-    let adjustedAltitude = altitude - beta; // beta represents pitch (rotation around horizontal axis)
+    let adjustedAltitude = altitude2 - beta; // beta represents pitch (rotation around horizontal axis)
 
     // Step 2: Convert the adjusted azimuth and altitude to normalized 3D coordinates (on the unit sphere)
     const azimuthRad = adjustedAzimuth * Math.PI / 180;
