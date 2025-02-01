@@ -97,7 +97,7 @@ async function getPlanetDistance(planetName) {
 }
 
 function planetToScreenCoords(azimuth, altitude, r, alpha, beta, gamma, fovHorizontal, fovVertical) {
-    console.log('Hello')
+    console.log(r)
     // Convert azimuth and altitude to radians
     const video = document.getElementById('video');
     const windowWidth = video.videoWidth;
