@@ -76,78 +76,61 @@ function matrixMultiply(m1, m2) {
 
 
 
-function planetToScreenCoords(planetAzimuth,   // Planet azimuth in degrees (0 to 360)
-    planetAltitude,  // Planet altitude in degrees (-90 to 90)
-    alpha,           // Device orientation alpha (rotation around Z-axis, in degrees)
-    beta,            // Device orientation beta (rotation around X-axis, in degrees)
-    gamma,           // Device orientation gamma (rotation around Y-axis, in degrees)
-    vFov,            // Horizontal field of view in degrees
-    hFov
-     ) {
+function planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, fovHorizontal, fovVertical) {
     // Convert azimuth and altitude to radians
     const video = document.getElementById('video');
-    const screenWidth = video.videoWidth;
-    const screenHeight = video.videoHeight;
-    const toRad = (deg) => deg * (Math.PI / 180);
+    const windowWidth = video.videoWidth;
+    const windowHeight = video.videoHeight;
+    // Convert angles to radians
+    azimuth = azimuth * Math.PI / 180;
+    altitude = altitude * Math.PI / 180;
+    alpha = alpha * Math.PI / 180;
+    beta = beta * Math.PI / 180;
+    gamma = gamma * Math.PI / 180;
 
-    // Convert planet spherical coordinates (azimuth, altitude) to Cartesian coordinates
-    const azimuthRad = toRad(planetAzimuth);
-    const altitudeRad = toRad(planetAltitude);
-    const planetY = Math.cos(altitudeRad) * Math.cos(azimuthRad);
-    const planetX = Math.cos(altitudeRad) * Math.sin(azimuthRad);
-    const planetZ = Math.sin(altitudeRad);
+    // Assume the distance to the planet is 1 (you can scale this value as needed)
+    let r = 1;
 
-    // Device orientation rotation matrix (Z-X-Y order)
-    const alphaRad = toRad(alpha);
-    const betaRad = toRad(beta);
-    const gammaRad = toRad(gamma);
+    // Convert planet's spherical coordinates (azimuth, altitude) to Cartesian coordinates
+    let xPlanet = r * Math.cos(altitude) * Math.sin(azimuth);
+    let yPlanet = r * Math.cos(altitude) * Math.cos(azimuth);
+    let zPlanet = r * Math.sin(altitude);
 
-    const cosA = Math.cos(alphaRad);
-    const sinA = Math.sin(alphaRad);
-    const cosB = Math.cos(betaRad);
-    const sinB = Math.sin(betaRad);
-    const cosG = Math.cos(gammaRad);
-    const sinG = Math.sin(gammaRad);
-
-    // Rotation matrix for device orientation
-    const rotMatrix = [
+    // Rotate the coordinates based on device's orientation (alpha, beta, gamma)
+    // Rotation matrices for the device orientation
+    let rotationMatrix = [
         [
-            cosA * cosG - sinA * sinB * sinG,
-            -sinA * cosB,
-            cosA * sinG + sinA * sinB * cosG
+            Math.cos(beta) * Math.cos(gamma),
+            -Math.cos(beta) * Math.sin(gamma),
+            Math.sin(beta)
         ],
         [
-            sinA * cosG + cosA * sinB * sinG,
-            cosA * cosB,
-            sinA * sinG - cosA * sinB * cosG
+            Math.sin(alpha) * Math.sin(beta) * Math.cos(gamma) + Math.cos(alpha) * Math.sin(gamma),
+            -Math.sin(alpha) * Math.sin(beta) * Math.sin(gamma) + Math.cos(alpha) * Math.cos(gamma),
+            -Math.sin(alpha) * Math.cos(beta)
         ],
         [
-            -cosB * sinG,
-            sinB,
-            cosB * cosG
+            -Math.cos(alpha) * Math.sin(beta) * Math.cos(gamma) + Math.sin(alpha) * Math.sin(gamma),
+            Math.cos(alpha) * Math.sin(beta) * Math.sin(gamma) + Math.sin(alpha) * Math.cos(gamma),
+            Math.cos(alpha) * Math.cos(beta)
         ]
     ];
 
-    // Apply rotation to planet coordinates
-    const rotatedX = rotMatrix[0][0] * planetX + rotMatrix[0][1] * planetY + rotMatrix[0][2] * planetZ;
-    const rotatedY = rotMatrix[1][0] * planetX + rotMatrix[1][1] * planetY + rotMatrix[1][2] * planetZ;
-    const rotatedZ = rotMatrix[2][0] * planetX + rotMatrix[2][1] * planetY + rotMatrix[2][2] * planetZ;
+    // Apply the rotation matrix to the planet's coordinates
+    let xRot = rotationMatrix[0][0] * xPlanet + rotationMatrix[0][1] * yPlanet + rotationMatrix[0][2] * zPlanet;
+    let yRot = rotationMatrix[1][0] * xPlanet + rotationMatrix[1][1] * yPlanet + rotationMatrix[1][2] * zPlanet;
+    let zRot = rotationMatrix[2][0] * xPlanet + rotationMatrix[2][1] * yPlanet + rotationMatrix[2][2] * zPlanet;
 
-    // Project rotated coordinates onto the screen
-    const aspectRatio = screenWidth / screenHeight;
-    const hFovRad = toRad(hFov);
-    const vFovRad = toRad(vFov);
+    // Project the 3D coordinates onto a 2D screen using perspective projection
+    let xScreen = (xRot / zRot) * fovHorizontal;
+    let yScreen = (yRot / zRot) * fovVertical;
 
-    const xProj = (rotatedX / rotatedZ) * Math.tan(hFovRad / 2) * aspectRatio;
-    const yProj = (rotatedY / rotatedZ) * Math.tan(vFovRad / 2);
+    // Convert from normalized device coordinates to screen coordinates
+    let xScreenFinal = (xScreen + 1) / 2 * windowWidth;
+    let yScreenFinal = (yScreen + 1) / 2 * windowHeight;
 
-    // Map projected coordinates to screen pixels
-    const xScreen = ((xProj + 1) / 2) * screenWidth;
-    const yScreen = ((1 - yProj) / 2) * screenHeight;
-
-    return { x: xScreen, y: yScreen };
+    return { x: xScreenFinal, y: yScreenFinal };
 }
-
 function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVertical,fovHorizontal) {
     windowWidth = window.innerWidth;
     windowHeight = window.innerHeight;
