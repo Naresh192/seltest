@@ -89,7 +89,7 @@ function planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, fovVertical
     const x = r * Math.cos(altitudeRad) * Math.sin(azimuthRad);
     const y = r * Math.sin(altitudeRad);
     const z = r * Math.cos(altitudeRad) * Math.cos(azimuthRad);
-    
+    document.getElementById('pov').innerText = x
     // Step 2: Rotate the coordinates based on the device orientation (alpha, beta, gamma)
     const alphaRad = alpha * Math.PI / 180;
     const betaRad = beta * Math.PI / 180;
@@ -132,7 +132,6 @@ function planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, fovVertical
     const screenY = -(yRot / zRot) * Math.tan(fovVerticalRad / 2) * windowHeight / 2 + windowHeight / 2;
 
     // Return the calculated screen coordinates
-    document.getElementById('pov').innerText = screenX
     return { x: screenX, y: screenY };
 }
 
