@@ -98,7 +98,6 @@ async function getPlanetDistance(planetName) {
 
 function planetToScreenCoords(azimuth, altitude, r, alpha, beta, gamma, fovHorizontal, fovVertical) {
     // Convert azimuth and altitude to radians
-    r=1
     const video = document.getElementById('video');
     const windowWidth = video.videoWidth;
     const windowHeight = video.videoHeight;
@@ -148,7 +147,7 @@ function planetToScreenCoords(azimuth, altitude, r, alpha, beta, gamma, fovHoriz
     // Convert from normalized device coordinates to screen coordinates
     let xScreenFinal = (xScreen + 1) / 2 * windowWidth;
     let yScreenFinal = (yScreen + 1) / 2 * windowHeight;
-    document.getElementById('pov').innerText = r;
+    document.getElementById('pov').innerText = xScreenFinal;
     return { x: xScreenFinal, y: yScreenFinal };
 }
 function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVertical,fovHorizontal) {
