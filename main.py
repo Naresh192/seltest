@@ -43,6 +43,7 @@ async function startCamera() {
 startCamera();
 
 function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVertical,fovHorizontal) {
+    document.getElementById('pov').innerText = 'hello';
     windowWidth = window.innerWidth;
     windowHeight = window.innerHeight;
     // Convert azimuth and altitude to radians
