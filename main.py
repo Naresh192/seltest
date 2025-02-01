@@ -229,7 +229,14 @@ navigator.geolocation.getCurrentPosition(async function(position) {
     // Fetch astronomical data
     const response = await fetch(`https://api.visibleplanets.dev/v3?latitude=${latitude}&longitude=${longitude}`);
     const data = await response.json();
+    for (let planet of data.data) {
+        const planetName = planet.name.toLowerCase(); // Ensure planet name is in lowercase for the API
+        const bodyResponse = await fetch(`https://api.le-systeme-solaire.net/rest/bodies/${planetName}`);
+        const bodyData = await bodyResponse.json();
 
+        // Add 'meanradius' to the planet object
+        planet.meanradius = bodyData.meanRadius || 'N/A';  // Add meanradius, if available
+    }
     // Display the response data in the UI
     document.getElementById('responseData').innerText = JSON.stringify(data, null, 2);
     // Display planet data
