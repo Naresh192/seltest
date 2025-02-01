@@ -81,34 +81,57 @@ function planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, fovVertical
     const video = document.getElementById('video');
     const windowWidth = video.videoWidth;
     const windowHeight = video.videoHeight;
+    const azimuthRad = azimuth * Math.PI / 180;
+    const altitudeRad = altitude * Math.PI / 180;
+    
+    // Step 1: Convert azimuth/altitude to Cartesian coordinates (x, y, z)
+    const r = 1; // Assume unit sphere, can scale if needed
+    const x = r * Math.cos(altitudeRad) * Math.sin(azimuthRad);
+    const y = r * Math.sin(altitudeRad);
+    const z = r * Math.cos(altitudeRad) * Math.cos(azimuthRad);
+    
+    // Step 2: Rotate the coordinates based on the device orientation (alpha, beta, gamma)
     const alphaRad = alpha * Math.PI / 180;
-    const azimuth2 = azimuth * Math.PI / 180;
-    const altitude2 = altitude * Math.PI / 180;
     const betaRad = beta * Math.PI / 180;
     const gammaRad = gamma * Math.PI / 180;
+    // Rotation matrices for Euler angles (alpha, beta, gamma)
+    const Rz = [
+        [Math.cos(alphaRad), -Math.sin(alphaRad), 0],
+        [Math.sin(alphaRad), Math.cos(alphaRad), 0],
+        [0, 0, 1]
+    ];
 
-    // Adjust azimuth (horizontal rotation effect)
-    let adjustedAzimuth = azimuth2 - alphaRad; // alpha represents yaw (rotation around vertical axis)
+    const Rx = [
+        [1, 0, 0],
+        [0, Math.cos(betaRad), -Math.sin(betaRad)],
+        [0, Math.sin(betaRad), Math.cos(betaRad)]
+    ];
 
-    // Adjust altitude (vertical rotation effect)
-    let adjustedAltitude = altitude2 - betaRad; // beta represents pitch (rotation around horizontal axis)
+    const Ry = [
+        [Math.cos(gammaRad), 0, Math.sin(gammaRad)],
+        [0, 1, 0],
+        [-Math.sin(gammaRad), 0, Math.cos(gammaRad)]
+    ];
+    // Combined rotation matrix: R = Rz * Ry * Rx
+    const rotationMatrix = multiplyMatrices(multiplyMatrices(Rz, Ry), Rx);
+    
 
-    // Step 2: Convert the adjusted azimuth and altitude to normalized 3D coordinates (on the unit sphere)
-    const azimuthRad = adjustedAzimuth * Math.PI / 180;
-    const altitudeRad = adjustedAltitude * Math.PI / 180;
+    // Rotate the Cartesian coordinates using the rotation matrix
+    const rotatedCoords = multiplyMatrixVector(rotationMatrix, [x, y, z]);
 
-    const x3D = Math.cos(altitudeRad) * Math.sin(azimuthRad);
-    const y3D = Math.sin(altitudeRad);
-    const z3D = Math.cos(altitudeRad) * Math.cos(azimuthRad);
+    const xRot = rotatedCoords[0];
+    const yRot = rotatedCoords[1];
+    const zRot = rotatedCoords[2];
 
-    // Step 3: Apply a basic perspective projection (simplified)
-    const fovRadVertical = fovVertical * Math.PI / 180;
-    const fovRadHorizontal = fovHorizontal * Math.PI / 180;
 
-    // Project 3D to 2D coordinates
-    const screenX = (x3D / z3D) * (windowWidth / 2 / Math.tan(fovRadHorizontal / 2)) + windowWidth / 2;
-    const screenY = -(y3D / z3D) * (windowHeight / 2 / Math.tan(fovRadVertical / 2)) + windowHeight / 2;
+    // Step 3: Project the 3D coordinates onto the 2D screen
+    const fovVerticalRad = fovVertical * Math.PI / 180;
+    const fovHorizontalRad = fovHorizontal * Math.PI / 180;
+    
+    const screenX = (xRot / zRot) * Math.tan(fovHorizontalRad / 2) * windowWidth / 2 + windowWidth / 2;
+    const screenY = -(yRot / zRot) * Math.tan(fovVerticalRad / 2) * windowHeight / 2 + windowHeight / 2;
 
+    // Return the calculated screen coordinates
     return { x: screenX, y: screenY };
 }
 
