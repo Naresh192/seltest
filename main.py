@@ -96,7 +96,17 @@ async function getPlanetDistance(planetName) {
   }
 }
 
-function planetToScreenCoords(azimuth, altitude, r, alpha, beta, gamma, fovHorizontal, fovVertical) {
+function multiplyMatrices(m, v) {
+    let result = [];
+    for (let i = 0; i < m.length; i++) {
+        result[i] = 0;
+        for (let j = 0; j < m[i].length; j++) {
+            result[i] += m[i][j] * v[j];
+        }
+    }
+    return result;
+}
+function planetToScreenCoords(azimuth, altitude, distance, alpha, beta, gamma, fovY, foXY) {
     // Convert azimuth and altitude to radians
     const video = document.getElementById('video');
     const windowWidth = video.videoWidth;
@@ -104,52 +114,52 @@ function planetToScreenCoords(azimuth, altitude, r, alpha, beta, gamma, fovHoriz
     // Convert angles to radians
     azimuth = azimuth * Math.PI / 180;
     altitude = altitude * Math.PI / 180;
-    alpha = alpha * Math.PI / 180;
-    beta = beta * Math.PI / 180;
-    gamma = gamma * Math.PI / 180;
 
-    // Assume the distance to the planet is 1 (you can scale this value as needed)
+    // Step 1: Convert to 3D cartesian coordinates
+    let x = distance * Math.cos(altitude) * Math.sin(azimuth);
+    let y = distance * Math.sin(altitude);
+    let z = distance * Math.cos(altitude) * Math.cos(azimuth);
 
-    // Convert planet's spherical coordinates (azimuth, altitude) to Cartesian coordinates
-    let xPlanet = r * Math.cos(altitude) * Math.sin(azimuth);
-    let yPlanet = r * Math.cos(altitude) * Math.cos(azimuth);
-    let zPlanet = r * Math.sin(altitude);
+    // Step 2: Apply device orientation (alpha, beta, gamma - rotation angles in degrees)
+    let alphaRad = alpha * Math.PI / 180;
+    let betaRad = beta * Math.PI / 180;
+    let gammaRad = gamma * Math.PI / 180;
 
-    // Rotate the coordinates based on device's orientation (alpha, beta, gamma)
-    // Rotation matrices for the device orientation
-    let rotationMatrix = [
-        [
-            Math.cos(beta) * Math.cos(gamma),
-            -Math.cos(beta) * Math.sin(gamma),
-            Math.sin(beta)
-        ],
-        [
-            Math.sin(alpha) * Math.sin(beta) * Math.cos(gamma) + Math.cos(alpha) * Math.sin(gamma),
-            -Math.sin(alpha) * Math.sin(beta) * Math.sin(gamma) + Math.cos(alpha) * Math.cos(gamma),
-            -Math.sin(alpha) * Math.cos(beta)
-        ],
-        [
-            -Math.cos(alpha) * Math.sin(beta) * Math.cos(gamma) + Math.sin(alpha) * Math.sin(gamma),
-            Math.cos(alpha) * Math.sin(beta) * Math.sin(gamma) + Math.sin(alpha) * Math.cos(gamma),
-            Math.cos(alpha) * Math.cos(beta)
-        ]
+    // Rotation matrices (simplified, use more advanced ones for more accurate results)
+    let rotX = [
+        [1, 0, 0],
+        [0, Math.cos(betaRad), -Math.sin(betaRad)],
+        [0, Math.sin(betaRad), Math.cos(betaRad)]
     ];
 
-    // Apply the rotation matrix to the planet's coordinates
-    let xRot = rotationMatrix[0][0] * xPlanet + rotationMatrix[0][1] * yPlanet + rotationMatrix[0][2] * zPlanet;
-    let yRot = rotationMatrix[1][0] * xPlanet + rotationMatrix[1][1] * yPlanet + rotationMatrix[1][2] * zPlanet;
-    let zRot = rotationMatrix[2][0] * xPlanet + rotationMatrix[2][1] * yPlanet + rotationMatrix[2][2] * zPlanet;
+    let rotY = [
+        [Math.cos(alphaRad), 0, Math.sin(alphaRad)],
+        [0, 1, 0],
+        [-Math.sin(alphaRad), 0, Math.cos(alphaRad)]
+    ];
 
-    // Project the 3D coordinates onto a 2D screen using perspective projection
-    let xScreen = (xRot / zRot) * fovHorizontal;
-    let yScreen = (yRot / zRot) * fovVertical;
+    let rotZ = [
+        [Math.cos(gammaRad), -Math.sin(gammaRad), 0],
+        [Math.sin(gammaRad), Math.cos(gammaRad), 0],
+        [0, 0, 1]
+    ];
 
-    // Convert from normalized device coordinates to screen coordinates
-    let xScreenFinal = (xScreen + 1) / 2 * windowWidth;
-    let yScreenFinal = (yScreen + 1) / 2 * windowHeight;
-    document.getElementById('pov').innerText = xScreenFinal;
-    return { x: xScreenFinal, y: yScreenFinal };
+    // Multiply the rotation matrices
+    let rotated = multiplyMatrices(rotX, [x, y, z]);
+    rotated = multiplyMatrices(rotY, rotated);
+    rotated = multiplyMatrices(rotZ, rotated);
+
+    x = rotated[0];
+    y = rotated[1];
+    z = rotated[2];
+
+    // Step 3: Apply perspective projection
+    let screenX = (x / z) * fovX * windowWidth / 2 + windowWidth / 2;
+    let screenY = (y / z) * fovY * windowHeight / 2 + windowHeight / 2;
+
+    return { x: screenX, y: screenY };
 }
+
 function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVertical,fovHorizontal) {
     windowWidth = window.innerWidth;
     windowHeight = window.innerHeight;
