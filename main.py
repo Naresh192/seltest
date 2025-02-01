@@ -83,55 +83,50 @@ function planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, fovVertical
     const windowHeight = video.videoHeight;
     const azimuthRad = azimuth * Math.PI / 180;
     const altitudeRad = altitude * Math.PI / 180;
-    
-    // Step 1: Convert azimuth/altitude to Cartesian coordinates (x, y, z)
-    const r = 1; // Assume unit sphere, can scale if needed
-    const x = r * Math.cos(altitudeRad) * Math.sin(azimuthRad);
-    const y = r * Math.sin(altitudeRad);
-    const z = r * Math.cos(altitudeRad) * Math.cos(azimuthRad);
-    // Step 2: Rotate the coordinates based on the device orientation (alpha, beta, gamma)
+
+    // Spherical to Cartesian conversion (assuming radius = 1 for simplicity)
+    const x3D = Math.cos(altitudeRad) * Math.sin(azimuthRad);
+    const y3D = Math.sin(altitudeRad);
+    const z3D = Math.cos(altitudeRad) * Math.cos(azimuthRad);
+
+    // Step 2: Apply Device Orientation (Alpha, Beta, Gamma)
+    // Convert degrees to radians
     const alphaRad = alpha * Math.PI / 180;
     const betaRad = beta * Math.PI / 180;
     const gammaRad = gamma * Math.PI / 180;
-    // Rotation matrices for Euler angles (alpha, beta, gamma)
-    const Rz = [
-        [Math.cos(alphaRad), -Math.sin(alphaRad), 0],
-        [Math.sin(alphaRad), Math.cos(alphaRad), 0],
-        [0, 0, 1]
+
+    // Rotation matrices for yaw (alpha), pitch (beta), and roll (gamma)
+    const rotationMatrix = [
+        [
+            Math.cos(betaRad) * Math.cos(gammaRad),
+            Math.cos(betaRad) * Math.sin(gammaRad),
+            -Math.sin(betaRad)
+        ],
+        [
+            Math.sin(alphaRad) * Math.sin(betaRad) * Math.cos(gammaRad) - Math.cos(alphaRad) * Math.sin(gammaRad),
+            Math.sin(alphaRad) * Math.sin(betaRad) * Math.sin(gammaRad) + Math.cos(alphaRad) * Math.cos(gammaRad),
+            Math.sin(alphaRad) * Math.cos(betaRad)
+        ],
+        [
+            Math.cos(alphaRad) * Math.sin(betaRad) * Math.cos(gammaRad) + Math.sin(alphaRad) * Math.sin(gammaRad),
+            Math.cos(alphaRad) * Math.sin(betaRad) * Math.sin(gammaRad) - Math.sin(alphaRad) * Math.cos(gammaRad),
+            Math.cos(alphaRad) * Math.cos(betaRad)
+        ]
     ];
 
-    const Rx = [
-        [1, 0, 0],
-        [0, Math.cos(betaRad), -Math.sin(betaRad)],
-        [0, Math.sin(betaRad), Math.cos(betaRad)]
-    ];
+    // Apply the rotation to the 3D coordinates
+    const rotatedX = rotationMatrix[0][0] * x3D + rotationMatrix[0][1] * y3D + rotationMatrix[0][2] * z3D;
+    const rotatedY = rotationMatrix[1][0] * x3D + rotationMatrix[1][1] * y3D + rotationMatrix[1][2] * z3D;
+    const rotatedZ = rotationMatrix[2][0] * x3D + rotationMatrix[2][1] * y3D + rotationMatrix[2][2] * z3D;
 
-    const Ry = [
-        [Math.cos(gammaRad), 0, Math.sin(gammaRad)],
-        [0, 1, 0],
-        [-Math.sin(gammaRad), 0, Math.cos(gammaRad)]
-    ];
-    // Combined rotation matrix: R = Rz * Ry * Rx
-    const rotationMatrix = multiplyMatrices(Rz, Ry, Rx);
+    // Step 3: Project the 3D coordinates to 2D screen coordinates
+    const fovRadVertical = fovVertical * Math.PI / 180;
+    const fovRadHorizontal = fovHorizontal * Math.PI / 180;
 
+    // Calculate the 2D screen coordinates based on the 3D position
+    const screenX = (rotatedX / rotatedZ) * (windowWidth / 2 / Math.tan(fovRadHorizontal / 2)) + windowWidth / 2;
+    const screenY = -(rotatedY / rotatedZ) * (windowHeight / 2 / Math.tan(fovRadVertical / 2)) + windowHeight / 2;
 
-    // Rotate the Cartesian coordinates using the rotation matrix
-    const rotatedCoords = multiplyMatrixVector(rotationMatrix, [x, y, z]);
-    document.getElementById('pov').innerText = x
-
-    const xRot = rotatedCoords[0];
-    const yRot = rotatedCoords[1];
-    const zRot = rotatedCoords[2];
-
-
-    // Step 3: Project the 3D coordinates onto the 2D screen
-    const fovVerticalRad = fovVertical * Math.PI / 180;
-    const fovHorizontalRad = fovHorizontal * Math.PI / 180;
-    
-    const screenX = (xRot / zRot) * Math.tan(fovHorizontalRad / 2) * windowWidth / 2 + windowWidth / 2;
-    const screenY = -(yRot / zRot) * Math.tan(fovVerticalRad / 2) * windowHeight / 2 + windowHeight / 2;
-
-    // Return the calculated screen coordinates
     return { x: screenX, y: screenY };
 }
 
