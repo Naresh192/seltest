@@ -32,7 +32,7 @@ async function startCamera() {
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
         const videoTrack = stream.getVideoTracks()[0];
         const settings = videoTrack.getSettings();
-        document.getElementById('pov').innerText = settings;
+        
         const videoElement = document.getElementById('video');
         videoElement.srcObject = stream;
     } catch (error) {
@@ -98,6 +98,7 @@ function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVerti
     const screenY = -(yRot / zRot) * Math.tan(fovVerticalRad / 2) * windowHeight / 2 + windowHeight / 2;
 
     // Return the calculated screen coordinates
+    document.getElementById('pov').innerText+ = { x: screenX, y: screenY };
     return { x: screenX, y: screenY };
 }
 
@@ -140,7 +141,7 @@ navigator.geolocation.getCurrentPosition(async function(position) {
 });
 </script>
 <div id="orientation" style="background-color: #f0f0f0; padding: 10px;"></div>
-<div id="pov" style="background-color: red; padding: 10px;"></div>
+<div id="" style="background-color: red; padding: 10px;"></div>
 
 <video id="video" autoplay width=100% height=100%></video>
 <div id="planetOverlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
