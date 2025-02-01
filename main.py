@@ -74,9 +74,29 @@ function matrixMultiply(m1, m2) {
   return result;
 }
 
+async function getPlanetDistance(planetName) {
+  const apiUrl = `https://api.le-systeme-solaire.net/rest/bodies/${planetName}`;
 
+  try {
+    // Fetch data from the API
+    const response = await fetch(apiUrl);
+    const data = await response.json();
 
-function planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, fovHorizontal, fovVertical) {
+    // Extract relevant values from the data
+    if (data && data.meanRadius) {
+      const distance = data.meanRadius; // Distance to Earth in km (this could vary)
+      console.log(`The distance to ${planetName} from Earth is approximately: ${distance} km`);
+      return distance;
+    } else {
+      console.log("Data not available or planet does not exist.");
+      return null;
+    }
+  } catch (error) {
+    console.error("Error fetching planet data:", error);
+  }
+}
+
+function planetToScreenCoords(azimuth, altitude, r, alpha, beta, gamma, fovHorizontal, fovVertical) {
     // Convert azimuth and altitude to radians
     const video = document.getElementById('video');
     const windowWidth = video.videoWidth;
@@ -89,7 +109,6 @@ function planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, fovHorizont
     gamma = gamma * Math.PI / 180;
 
     // Assume the distance to the planet is 1 (you can scale this value as needed)
-    let r = 1;
 
     // Convert planet's spherical coordinates (azimuth, altitude) to Cartesian coordinates
     let xPlanet = r * Math.cos(altitude) * Math.sin(azimuth);
@@ -194,7 +213,8 @@ function updatePlanetPositions(alpha, beta, gamma) {
     const planets = JSON.parse(document.getElementById('planetData').innerText);
     planets.forEach(planet => {
         const { azimuth, altitude } = planet;
-        const position = planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, 56, 70);
+        distance = getPlanetDistance(planet.name)
+        const position = planetToScreenCoords(azimuth, altitude, distance, alpha, beta, gamma, 56, 70);
         const planetElement = document.getElementById(planet.name);
         planetElement.style.left = `${position.x}px`;
         planetElement.style.top = `${position.y}px`;
