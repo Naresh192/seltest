@@ -112,7 +112,7 @@ function planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, fovVertical
         [-Math.sin(gammaRad), 0, Math.cos(gammaRad)]
     ];
     // Combined rotation matrix: R = Rz * Ry * Rx
-    const rotationMatrix = multiplyMatrices(multiplyMatrices(Rz, Ry), Rx);
+    const rotationMatrix = multiplyMatrices(Rz, Ry, Rx);
     document.getElementById('pov').innerText = x
 
 
