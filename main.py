@@ -78,9 +78,9 @@ function matrixMultiply(m1, m2) {
 
 function planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, fovVertical, fovHorizontal) {
   // Convert azimuth and altitude to radians
-  document.getElementById('pov').innerText = azimuth;
   windowWidth = window.innerWidth;
   windowHeight = window.innerHeight;
+  document.getElementById('pov').innerText = azimuth;
   const azimuthRad = azimuth * Math.PI / 180;
   const altitudeRad = altitude * Math.PI / 180;
 
