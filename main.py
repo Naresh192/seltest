@@ -79,55 +79,66 @@ function matrixMultiply(m1, m2) {
 function planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, fovVertical, fovHorizontal) {
     // Convert azimuth and altitude to radians
     const video = document.getElementById('video');
-    const windowWidth = video.videoWidth;
-    const windowHeight = video.videoHeight;
-    const azimuthRad = azimuth * Math.PI / 180;
-    const altitudeRad = altitude * Math.PI / 180;
+    const screenWidth = video.videoWidth;
+    const screenHeight = video.videoHeight;
+    const toRad = (deg) => deg * (Math.PI / 180);
 
-    // Spherical to Cartesian conversion (assuming radius = 1 for simplicity)
-    const x3D = Math.cos(altitudeRad) * Math.sin(azimuthRad);
-    const y3D = Math.sin(altitudeRad);
-    const z3D = Math.cos(altitudeRad) * Math.cos(azimuthRad);
+    // Convert planet spherical coordinates (azimuth, altitude) to Cartesian coordinates
+    const azimuthRad = toRad(planetAzimuth);
+    const altitudeRad = toRad(planetAltitude);
+    const planetX = Math.cos(altitudeRad) * Math.cos(azimuthRad);
+    const planetY = Math.cos(altitudeRad) * Math.sin(azimuthRad);
+    const planetZ = Math.sin(altitudeRad);
 
-    // Step 2: Apply Device Orientation (Alpha, Beta, Gamma)
-    // Convert degrees to radians
-    const alphaRad = alpha * Math.PI / 180;
-    const betaRad = beta * Math.PI / 180;
-    const gammaRad = gamma * Math.PI / 180;
+    // Device orientation rotation matrix (Z-X-Y order)
+    const alphaRad = toRad(alpha);
+    const betaRad = toRad(beta);
+    const gammaRad = toRad(gamma);
 
-    // Rotation matrices for yaw (alpha), pitch (beta), and roll (gamma)
-    const rotationMatrix = [
+    const cosA = Math.cos(alphaRad);
+    const sinA = Math.sin(alphaRad);
+    const cosB = Math.cos(betaRad);
+    const sinB = Math.sin(betaRad);
+    const cosG = Math.cos(gammaRad);
+    const sinG = Math.sin(gammaRad);
+
+    // Rotation matrix for device orientation
+    const rotMatrix = [
         [
-            Math.cos(betaRad) * Math.cos(gammaRad),
-            Math.cos(betaRad) * Math.sin(gammaRad),
-            -Math.sin(betaRad)
+            cosA * cosG - sinA * sinB * sinG,
+            -sinA * cosB,
+            cosA * sinG + sinA * sinB * cosG
         ],
         [
-            Math.sin(alphaRad) * Math.sin(betaRad) * Math.cos(gammaRad) - Math.cos(alphaRad) * Math.sin(gammaRad),
-            Math.sin(alphaRad) * Math.sin(betaRad) * Math.sin(gammaRad) + Math.cos(alphaRad) * Math.cos(gammaRad),
-            Math.sin(alphaRad) * Math.cos(betaRad)
+            sinA * cosG + cosA * sinB * sinG,
+            cosA * cosB,
+            sinA * sinG - cosA * sinB * cosG
         ],
         [
-            Math.cos(alphaRad) * Math.sin(betaRad) * Math.cos(gammaRad) + Math.sin(alphaRad) * Math.sin(gammaRad),
-            Math.cos(alphaRad) * Math.sin(betaRad) * Math.sin(gammaRad) - Math.sin(alphaRad) * Math.cos(gammaRad),
-            Math.cos(alphaRad) * Math.cos(betaRad)
+            -cosB * sinG,
+            sinB,
+            cosB * cosG
         ]
     ];
 
-    // Apply the rotation to the 3D coordinates
-    const rotatedX = rotationMatrix[0][0] * x3D + rotationMatrix[0][1] * y3D + rotationMatrix[0][2] * z3D;
-    const rotatedY = rotationMatrix[1][0] * x3D + rotationMatrix[1][1] * y3D + rotationMatrix[1][2] * z3D;
-    const rotatedZ = rotationMatrix[2][0] * x3D + rotationMatrix[2][1] * y3D + rotationMatrix[2][2] * z3D;
+    // Apply rotation to planet coordinates
+    const rotatedX = rotMatrix[0][0] * planetX + rotMatrix[0][1] * planetY + rotMatrix[0][2] * planetZ;
+    const rotatedY = rotMatrix[1][0] * planetX + rotMatrix[1][1] * planetY + rotMatrix[1][2] * planetZ;
+    const rotatedZ = rotMatrix[2][0] * planetX + rotMatrix[2][1] * planetY + rotMatrix[2][2] * planetZ;
 
-    // Step 3: Project the 3D coordinates to 2D screen coordinates
-    const fovRadVertical = fovVertical * Math.PI / 180;
-    const fovRadHorizontal = fovHorizontal * Math.PI / 180;
+    // Project rotated coordinates onto the screen
+    const aspectRatio = screenWidth / screenHeight;
+    const hFovRad = toRad(hFov);
+    const vFovRad = toRad(vFov);
 
-    // Calculate the 2D screen coordinates based on the 3D position
-    const screenX = (rotatedX / rotatedZ) * (windowWidth / 2 / Math.tan(fovRadHorizontal / 2)) + windowWidth / 2;
-    const screenY = -(rotatedY / rotatedZ) * (windowHeight / 2 / Math.tan(fovRadVertical / 2)) + windowHeight / 2;
+    const xProj = (rotatedX / rotatedZ) * Math.tan(hFovRad / 2) * aspectRatio;
+    const yProj = (rotatedY / rotatedZ) * Math.tan(vFovRad / 2);
 
-    return { x: screenX, y: screenY };
+    // Map projected coordinates to screen pixels
+    const xScreen = ((xProj + 1) / 2) * screenWidth;
+    const yScreen = ((1 - yProj) / 2) * screenHeight;
+
+    return { x: xScreen, y: yScreen };
 }
 
 function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVertical,fovHorizontal) {
