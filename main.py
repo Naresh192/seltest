@@ -78,8 +78,8 @@ function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVerti
         [-Math.sin(gammaRad), 0, Math.cos(gammaRad)]
     ];
     // Combined rotation matrix: R = Rz * Ry * Rx
-    const rotationMatrix = multiplyMatrices(multiplyMatrices(Rz, Ry), Rx);
     document.getElementById('pov').innerText = Rx;
+    const rotationMatrix = multiplyMatrices(multiplyMatrices(Rz, Ry), Rx);
 
     // Rotate the Cartesian coordinates using the rotation matrix
     const rotatedCoords = multiplyMatrixVector(rotationMatrix, [x, y, z]);
