@@ -76,7 +76,14 @@ function matrixMultiply(m1, m2) {
 
 
 
-function planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, fovVertical, fovHorizontal) {
+function planetToScreenCoords(planetAzimuth,   // Planet azimuth in degrees (0 to 360)
+    planetAltitude,  // Planet altitude in degrees (-90 to 90)
+    alpha,           // Device orientation alpha (rotation around Z-axis, in degrees)
+    beta,            // Device orientation beta (rotation around X-axis, in degrees)
+    gamma,           // Device orientation gamma (rotation around Y-axis, in degrees)
+    vFov,            // Horizontal field of view in degrees
+    hFov
+     ) {
     // Convert azimuth and altitude to radians
     const video = document.getElementById('video');
     const screenWidth = video.videoWidth;
