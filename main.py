@@ -107,7 +107,7 @@ function planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, fovVertical
     const screenY = -(y3D / z3D) * (windowHeight / 2 / Math.tan(fovRadVertical / 2)) + windowHeight / 2;
 
     return { x: screenX, y: screenY };
-
+}
 
 function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVertical,fovHorizontal) {
     windowWidth = window.innerWidth;
