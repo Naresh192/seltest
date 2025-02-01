@@ -60,17 +60,35 @@ function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVerti
     const betaRad = beta * Math.PI / 180;
     const gammaRad = gamma * Math.PI / 180;
     
-    // Rotation matrices for Euler angles
-    const rotationMatrix = [
-        [Math.cos(betaRad) * Math.cos(gammaRad), Math.cos(betaRad) * Math.sin(gammaRad), -Math.sin(betaRad)],
-        [Math.sin(alphaRad) * Math.sin(betaRad) * Math.cos(gammaRad) - Math.cos(alphaRad) * Math.sin(gammaRad), Math.sin(alphaRad) * Math.sin(betaRad) * Math.sin(gammaRad) + Math.cos(alphaRad) * Math.cos(gammaRad), Math.sin(alphaRad) * Math.cos(betaRad)],
-        [Math.cos(alphaRad) * Math.sin(betaRad) * Math.cos(gammaRad) + Math.sin(alphaRad) * Math.sin(gammaRad), Math.cos(alphaRad) * Math.sin(betaRad) * Math.sin(gammaRad) - Math.sin(alphaRad) * Math.cos(gammaRad), Math.cos(alphaRad) * Math.cos(betaRad)]
+    // Rotation matrices for Euler angles (alpha, beta, gamma)
+    const Rz = [
+        [Math.cos(alphaRad), -Math.sin(alphaRad), 0],
+        [Math.sin(alphaRad), Math.cos(alphaRad), 0],
+        [0, 0, 1]
     ];
 
-    // Rotate the coordinates
-    const xRot = rotationMatrix[0][0] * x + rotationMatrix[0][1] * y + rotationMatrix[0][2] * z;
-    const yRot = rotationMatrix[1][0] * x + rotationMatrix[1][1] * y + rotationMatrix[1][2] * z;
-    const zRot = rotationMatrix[2][0] * x + rotationMatrix[2][1] * y + rotationMatrix[2][2] * z;
+    const Rx = [
+        [1, 0, 0],
+        [0, Math.cos(betaRad), -Math.sin(betaRad)],
+        [0, Math.sin(betaRad), Math.cos(betaRad)]
+    ];
+
+    const Ry = [
+        [Math.cos(gammaRad), 0, Math.sin(gammaRad)],
+        [0, 1, 0],
+        [-Math.sin(gammaRad), 0, Math.cos(gammaRad)]
+    ];
+
+    // Combined rotation matrix: R = Rz * Ry * Rx
+    const rotationMatrix = multiplyMatrices(multiplyMatrices(Rz, Ry), Rx);
+
+    // Rotate the Cartesian coordinates using the rotation matrix
+    const rotatedCoords = multiplyMatrixVector(rotationMatrix, [x, y, z]);
+
+    const xRot = rotatedCoords[0];
+    const yRot = rotatedCoords[1];
+    const zRot = rotatedCoords[2];
+
 
     // Step 3: Project the 3D coordinates onto the 2D screen
     const fovVerticalRad = fovVertical * Math.PI / 180;
