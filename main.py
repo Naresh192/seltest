@@ -106,7 +106,7 @@ function multiplyMatrices(m, v) {
     }
     return result;
 }
-function planetToScreenCoords(azimuth, altitude, distance, alpha, beta, gamma, fovY, foX) {
+function planetToScreenCoords(azimuth, altitude, distance, alpha, beta, gamma, fovY, fovX) {
     // Convert azimuth and altitude to radians
     const video = document.getElementById('video');
     const windowWidth = video.videoWidth;
