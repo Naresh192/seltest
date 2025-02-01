@@ -80,7 +80,7 @@ function planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, fovVertical
   // Convert azimuth and altitude to radians
   windowWidth = window.innerWidth;
   windowHeight = window.innerHeight;
-  document.getElementById('pov').innerText += azimuth;
+  //document.getElementById('pov').innerText += azimuth;
   const azimuthRad = azimuth * Math.PI / 180;
   const altitudeRad = altitude * Math.PI / 180;
 
