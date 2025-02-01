@@ -145,10 +145,9 @@ function planetToScreenCoords(azimuth, altitude, distance, alpha, beta, gamma, f
 
     // Multiply the rotation matrices
     let rotated = multiplyMatrices(rotX, [x, y, z]);
-    document.getElementById('pov').innerText = distance;
     rotated = multiplyMatrices(rotY, rotated);
     rotated = multiplyMatrices(rotZ, rotated);
-
+    document.getElementById('pov').innerText = distance;
     x = rotated[0];
     y = rotated[1];
     z = rotated[2];
