@@ -114,6 +114,8 @@ function planetToScreenCoords(azimuth, altitude, distance, alpha, beta, gamma, f
     // Convert angles to radians
     azimuth = azimuth * Math.PI / 180;
     altitude = altitude * Math.PI / 180;
+    fovY = fovY * Math.PI / 180;
+    fovX = fovX * Math.PI / 180;
 
     // Step 1: Convert to 3D cartesian coordinates
     let x = distance * Math.cos(altitude) * Math.sin(azimuth);
