@@ -59,7 +59,7 @@ function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVerti
     const alphaRad = alpha * Math.PI / 180;
     const betaRad = beta * Math.PI / 180;
     const gammaRad = gamma * Math.PI / 180;
-    
+    document.getElementById('pov').innerText = alphaRad;
     // Rotation matrices for Euler angles (alpha, beta, gamma)
     const Rz = [
         [Math.cos(alphaRad), -Math.sin(alphaRad), 0],
