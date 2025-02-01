@@ -82,6 +82,8 @@ function planetToScreenCoords(azimuth, altitude, alpha, beta, gamma, fovVertical
     const windowWidth = video.videoWidth;
     const windowHeight = video.videoHeight;
     const alphaRad = alpha * Math.PI / 180;
+    const azimuth = azimuth * Math.PI / 180;
+    const altitude = altitude * Math.PI / 180;
     const betaRad = beta * Math.PI / 180;
     const gammaRad = gamma * Math.PI / 180;
 
