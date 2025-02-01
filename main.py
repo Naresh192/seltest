@@ -98,7 +98,6 @@ function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVerti
     const screenY = -(yRot / zRot) * Math.tan(fovVerticalRad / 2) * windowHeight / 2 + windowHeight / 2;
 
     // Return the calculated screen coordinates
-    document.getElementById('pov').innerText = { x: screenX, y: screenY };
     return { x: screenX, y: screenY };
 }
 
