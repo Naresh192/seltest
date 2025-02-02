@@ -106,88 +106,58 @@ function multiplyMatrices(m, v) {
     }
     return result;
 }
-// Function to convert spherical coordinates to Cartesian coordinates
-function sphericalToCartesian(azimuth, altitude, distance) {
-    const azimuthRad = azimuth * (Math.PI / 180); // Convert azimuth to radians
-    const altitudeRad = altitude * (Math.PI / 180); // Convert altitude to radians
+function planetToScreenCoords(azimuth, altitude, distance, alpha, beta, gamma, fovY, fovX) {
+    // Convert azimuth and altitude to radians
+    const video = document.getElementById('video');
+    const windowWidth = video.videoWidth;
+    const windowHeight = video.videoHeight;
+    // Convert angles to radians
+    azimuth = azimuth * Math.PI / 180;
+    altitude = altitude * Math.PI / 180;
+    fovY = fovY * Math.PI / 180;
+    fovX = fovX * Math.PI / 180;
 
-    // Calculate 3D Cartesian coordinates
-    const x = distance * Math.cos(altitudeRad) * Math.sin(azimuthRad);
-    const y = distance * Math.cos(altitudeRad) * Math.cos(azimuthRad);
-    const z = distance * Math.sin(altitudeRad);
+    // Step 1: Convert to 3D cartesian coordinates
+    let x = distance * Math.cos(altitude) * Math.sin(azimuth);
+    let z = distance * Math.sin(altitude);
+    let y = distance * Math.cos(altitude) * Math.cos(azimuth);
 
-    return { x, y, z };
-}
+    // Step 2: Apply device orientation (alpha, beta, gamma - rotation angles in degrees)
+    let alphaRad = alpha * Math.PI / 180;
+    let betaRad = beta * Math.PI / 180;
+    let gammaRad = gamma * Math.PI / 180;
+    // Rotation matrices (simplified, use more advanced ones for more accurate results)
+    let rotX = [
+        [1, 0, 0],
+        [0, Math.cos(alphaRad), -Math.sin(alphaRad)],
+        [0, Math.sin(alphaRad), Math.cos(alphaRad)]
+    ];
 
-// Function to calculate the direction vector of the eye from its orientation
-function getEyeDirectionVector(alpha, beta) {
-    const alphaRad = alpha * (Math.PI / 180); // Convert alpha to radians
-    const betaRad = beta * (Math.PI / 180); // Convert beta to radians
+    let rotY = [
+        [Math.cos(betaRad), 0, Math.sin(betaRad)],
+        [0, 1, 0],
+        [-Math.sin(betaRad), 0, Math.cos(betaRad)]
+    ];
 
-    // Eye's direction vector based on yaw (alpha) and pitch (beta)
-    const x = Math.cos(betaRad) * Math.sin(alphaRad);
-    const y = Math.cos(betaRad) * Math.cos(alphaRad);
-    const z = Math.sin(betaRad);
+    let rotZ = [
+        [Math.cos(gammaRad), -Math.sin(gammaRad), 0],
+        [Math.sin(gammaRad), Math.cos(gammaRad), 0],
+        [0, 0, 1]
+    ];
 
-    return { x, y, z };
-}
+    // Multiply the rotation matrices
+    let rotated = multiplyMatrices(rotX, [x, y, z]);
+    rotated = multiplyMatrices(rotY, rotated);
+    rotated = multiplyMatrices(rotZ, rotated);
+    x = rotated[0];
+    y = rotated[1];
+    z = rotated[2];
+    // Step 3: Apply perspective projection
+    let screenX = (x / z) * fovX * windowWidth / 2 + windowWidth / 2;
+    let screenY = (y / z) * fovY * windowHeight / 2 + windowHeight / 2;
+    document.getElementById('pov').innerText = screenX+' , '+windowWidth+' , '+windowHeight+' , '+screenY;
 
-// Function to compute the dot product of two vectors
-function dotProduct(v1, v2) {
-    return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z;
-}
-
-// Function to calculate if the planet is visible based on FOV and where it appears in the field of view
-function getPlanetPositionOnScreen(azimuth, altitude, distance, alpha, beta, horizontalFOV, verticalFOV, screenWidth, screenHeight) {
-    // Step 1: Get the eye's direction vector from its orientation
-    const eyeDirection = getEyeDirectionVector(alpha, beta);
-    const azimuthRad = azimuth * (Math.PI / 180); // Convert azimuth to radians
-    const altitudeRad = altitude * (Math.PI / 180); // Convert altitude to radians
-    const planetX = distance * Math.cos(altitudeRad) * Math.sin(azimuthRad);
-    const planetY = distance * Math.cos(altitudeRad) * Math.cos(azimuthRad);
-    const planetZ = distance * Math.sin(altitudeRad);
-    // Step 2: Calculate the planet's direction vector (assuming it's at planetX, planetY, planetZ)
-    const planetDistance = Math.sqrt(planetX ** 2 + planetY ** 2 + planetZ ** 2);
-    const planetDirection = {
-        x: planetX / planetDistance,
-        y: planetY / planetDistance,
-        z: planetZ / planetDistance
-    };
-
-    // Step 3: Compute the dot product between eye direction and planet direction
-    const dotProd = dotProduct(eyeDirection, planetDirection);
-
-    // Step 4: Calculate the angle between the two vectors (theta)
-    const angle = Math.acos(dotProd) * (180 / Math.PI); // Convert to degrees
-
-    // Step 5: Check if the planet is within the horizontal FOV
-    const halfHFOV = horizontalFOV / 2;
-    
-
-    // Step 6: Check if the planet is within the vertical FOV (altitude angle check)
-    const planetAltitude = Math.asin(planetDirection.z) * (180 / Math.PI); // Convert altitude to degrees
-    const halfVFOV = verticalFOV / 2;
-    
-
-    // Step 7: Calculate where the planet would appear on the 2D screen
-    // Project the planet's direction into the screen's coordinates
-    const screenX = Math.atan2(planetDirection.x, planetDirection.z) * (180 / Math.PI);
-    const screenY = Math.asin(planetDirection.y) * (180 / Math.PI);
-
-    // Normalize the screen coordinates based on the FOV
-    const normalizedX = screenX / halfHFOV;
-    const normalizedY = screenY / halfVFOV;
-
-    // Step 7: Map the normalized coordinates to screen dimensions
-    const finalX = (normalizedX + 1) / 2 * screenWidth;  // Maps [-1, 1] to [0, screenWidth]
-    const finalY = (1 - normalizedY) / 2 * screenHeight; // Maps [-1, 1] to [0, screenHeight] (flip Y-axis)
-
-
-    // Step 8: Return the screen coordinates along with visibility
-    return {
-        x: finalX,
-        y: finalY
-    };
+    return { x: screenX, y: screenY };
 }
 
 function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVertical,fovHorizontal) {
@@ -253,8 +223,7 @@ function updatePlanetPositions(alpha, beta, gamma) {
     const planets = JSON.parse(document.getElementById('planetData').innerText);
     planets.forEach(planet => {
         const { azimuth, altitude , meanradius} = planet;
-        getPlanetPositionOnScreen(azimuth, altitude, meanradius, alpha, beta, 70, 56)
-        const position = getPlanetPositionOnScreen(azimuth, altitude, meanradius, alpha, beta, 70, 56,480,640);
+        const position = planetToScreenCoords(azimuth, altitude, meanradius, alpha, beta, gamma, 56, 70);
         const planetElement = document.getElementById(planet.name);
         planetElement.style.left = `${position.x}px`;
         planetElement.style.top = `${position.y}px`;
