@@ -35,9 +35,22 @@ async function startCamera() {
         
         const videoElement = document.getElementById('video');
         videoElement.srcObject = stream;
+        
+        // Once the video metadata (like width and height) is loaded, adjust the div size
+        videoElement.onloadedmetadata = function() {
+            // Get the video stream's actual width and height
+            const videoWidth = videoElement.videoWidth;
+            const videoHeight = videoElement.videoHeight;
+            
+            // Set the video div's dimensions to match the video stream's output
+            const videoDiv = document.getElementById('videoDiv');
+            videoDiv.style.width = `${videoWidth}px`;
+            videoDiv.style.height = `${videoHeight}px`;
+        };
     } catch (error) {
         console.error('Error accessing the camera', error);
     }
+    
 }
 
 startCamera();
@@ -108,7 +121,7 @@ function multiplyMatrices(m, v) {
 }
 function planetToScreenCoords(azimuth, altitude, distance, alpha, beta, gamma, fovY, fovX) {
     // Convert azimuth and altitude to radians
-    const video = document.getElementById('video');
+    const video = document.getElementById('videoDiv');
     const windowWidth = video.videoWidth;
     const windowHeight = video.videoHeight;
     // Convert angles to radians
@@ -266,7 +279,9 @@ navigator.geolocation.getCurrentPosition(async function(position) {
 <div id="orientation" style="background-color: #f0f0f0; padding: 10px;"></div>
 <div id="pov" style="background-color: red; padding: 10px;"></div>
 
-<video id="video" autoplay style="position: relative; overflow: hidden;"></video>
+<div id="videoDiv" style="position: relative; overflow: hidden;">
+    <video id="video" autoplay></video>
+</div>
 <div id="planetOverlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
     <!-- Planet positions will be updated here -->
     <div id="planetData" style="display: none;"></div>
