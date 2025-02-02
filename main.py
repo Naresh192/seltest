@@ -162,16 +162,12 @@ function getPlanetPositionOnScreen(azimuth, altitude, distance, alpha, beta, hor
 
     // Step 5: Check if the planet is within the horizontal FOV
     const halfHFOV = horizontalFOV / 2;
-    if (angle > halfHFOV) {
-        return { visible: false }; // Planet is not within the horizontal FOV
-    }
+    
 
     // Step 6: Check if the planet is within the vertical FOV (altitude angle check)
     const planetAltitude = Math.asin(planetDirection.z) * (180 / Math.PI); // Convert altitude to degrees
     const halfVFOV = verticalFOV / 2;
-    if (Math.abs(planetAltitude) > halfVFOV) {
-        return { visible: false }; // Planet is not within the vertical FOV
-    }
+    
 
     // Step 7: Calculate where the planet would appear on the 2D screen
     // Project the planet's direction into the screen's coordinates
