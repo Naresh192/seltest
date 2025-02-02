@@ -129,14 +129,14 @@ function planetToScreenCoords(azimuth, altitude, distance, alpha, beta, gamma, f
     // Rotation matrices (simplified, use more advanced ones for more accurate results)
     let rotX = [
         [1, 0, 0],
-        [0, Math.cos(betaRad), -Math.sin(betaRad)],
-        [0, Math.sin(betaRad), Math.cos(betaRad)]
+        [0, Math.cos(alphaRad), -Math.sin(alphaRad)],
+        [0, Math.sin(alphaRad), Math.cos(alphaRad)]
     ];
 
     let rotY = [
-        [Math.cos(alphaRad), 0, Math.sin(alphaRad)],
+        [Math.cos(betaRad), 0, Math.sin(betaRad)],
         [0, 1, 0],
-        [-Math.sin(alphaRad), 0, Math.cos(alphaRad)]
+        [-Math.sin(betaRad), 0, Math.cos(betaRad)]
     ];
 
     let rotZ = [
