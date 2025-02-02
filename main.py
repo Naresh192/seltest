@@ -146,8 +146,8 @@ function planetToScreenCoords(azimuth, altitude, distance, alpha, beta, gamma, f
     ];
 
     // Multiply the rotation matrices
-    let rotated = multiplyMatrices(rotX, [x, y, z]);
-    rotated = multiplyMatrices(rotY, rotated);
+    let rotated = multiplyMatrices(rotY, [x, y, z]);
+    rotated = multiplyMatrices(rotX, rotated);
     rotated = multiplyMatrices(rotZ, rotated);
     x = rotated[0];
     y = rotated[1];
