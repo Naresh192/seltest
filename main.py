@@ -118,9 +118,9 @@ function planetToScreenCoords(azimuth, altitude, distance, alpha, beta, gamma, f
     fovX = fovX * Math.PI / 180;
 
     // Step 1: Convert to 3D cartesian coordinates
-    let y = distance * Math.cos(altitude) * Math.sin(azimuth);
+    let x = distance * Math.cos(altitude) * Math.sin(azimuth);
     let z = distance * Math.sin(altitude);
-    let x = distance * Math.cos(altitude) * Math.cos(azimuth);
+    let y = distance * Math.cos(altitude) * Math.cos(azimuth);
 
     // Step 2: Apply device orientation (alpha, beta, gamma - rotation angles in degrees)
     let alphaRad = alpha * Math.PI / 180;
