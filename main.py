@@ -145,7 +145,7 @@ function getPlanetPositionOnScreen(azimuth, altitude, distance, alpha, beta, hor
     const altitudeRad = altitude * (Math.PI / 180); // Convert altitude to radians
     const planetX = distance * Math.cos(altitudeRad) * Math.sin(azimuthRad);
     const planetY = distance * Math.cos(altitudeRad) * Math.cos(azimuthRad);
-    const planetY = distance * Math.sin(altitudeRad);
+    const planetZ = distance * Math.sin(altitudeRad);
     // Step 2: Calculate the planet's direction vector (assuming it's at planetX, planetY, planetZ)
     const planetDistance = Math.sqrt(planetX ** 2 + planetY ** 2 + planetZ ** 2);
     const planetDirection = {
