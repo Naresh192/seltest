@@ -12,7 +12,7 @@ function getOrientation() {
             var alpha = event.alpha.toFixed(2);
             var beta = event.beta.toFixed(2);
             var gamma = event.gamma.toFixed(2);
-            document.getElementById('orientation').innerText = Alpha: ${alpha}, Beta: ${beta}, Gamma: ${gamma};
+            document.getElementById('orientation').innerText = `Alpha: ${alpha}, Beta: ${beta}, Gamma: ${gamma}`;
             updatePlanetPositions(alpha, beta, gamma);
         }, false);
     } else {
@@ -75,7 +75,7 @@ function matrixMultiply(m1, m2) {
 }
 
 async function getPlanetDistance(planetName) {
-  const apiUrl = https://api.le-systeme-solaire.net/rest/bodies/${planetName};
+  const apiUrl = `https://api.le-systeme-solaire.net/rest/bodies/${planetName}`;
 
   try {
     // Fetch data from the API
@@ -85,7 +85,7 @@ async function getPlanetDistance(planetName) {
     // Extract relevant values from the data
     if (data && data.meanRadius) {
       const distance = data.meanRadius; // Distance to Earth in km (this could vary)
-      console.log(The distance to ${planetName} from Earth is approximately: ${distance} km);
+      console.log(`The distance to ${planetName} from Earth is approximately: ${distance} km`);
       return distance;
     } else {
       console.log("Data not available or planet does not exist.");
@@ -225,8 +225,8 @@ function updatePlanetPositions(alpha, beta, gamma) {
         const { azimuth, altitude , meanradius} = planet;
         const position = planetToScreenCoords(azimuth, altitude, meanradius, alpha, beta, gamma, 56, 70);
         const planetElement = document.getElementById(planet.name);
-        planetElement.style.left = ${position.x}px;
-        planetElement.style.top = ${position.y}px;
+        planetElement.style.left = `${position.x}px`;
+        planetElement.style.top = `${position.y}px`;
     });
 }
 
@@ -236,11 +236,11 @@ navigator.geolocation.getCurrentPosition(async function(position) {
     const longitude = position.coords.longitude;
 
     // Fetch astronomical data
-    const response = await fetch(https://api.visibleplanets.dev/v3?latitude=${latitude}&longitude=${longitude});
+    const response = await fetch(`https://api.visibleplanets.dev/v3?latitude=${latitude}&longitude=${longitude}`);
     const data = await response.json();
     for (let planet of data.data) {
         const planetName = planet.name.toLowerCase(); // Ensure planet name is in lowercase for the API
-        const bodyResponse = await fetch(https://api.le-systeme-solaire.net/rest/bodies/${planetName});
+        const bodyResponse = await fetch(`https://api.le-systeme-solaire.net/rest/bodies/${planetName}`);
         const bodyData = await bodyResponse.json();
 
         // Add 'meanradius' to the planet object
