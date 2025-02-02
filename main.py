@@ -138,7 +138,7 @@ function dotProduct(v1, v2) {
 }
 
 // Function to calculate if the planet is visible based on FOV and where it appears in the field of view
-function getPlanetPositionOnScreen(azimuth, altitude, distance, alpha, beta, horizontalFOV, verticalFOV) {
+function getPlanetPositionOnScreen(azimuth, altitude, distance, alpha, beta, horizontalFOV, verticalFOV, screenWidth, screenHeight) {
     // Step 1: Get the eye's direction vector from its orientation
     const eyeDirection = getEyeDirectionVector(alpha, beta);
     const azimuthRad = azimuth * (Math.PI / 180); // Convert azimuth to radians
@@ -179,36 +179,21 @@ function getPlanetPositionOnScreen(azimuth, altitude, distance, alpha, beta, hor
     const screenY = Math.asin(planetDirection.y) * (180 / Math.PI);
 
     // Normalize the screen coordinates based on the FOV
-    const normalizedX = (screenX / (horizontalFOV / 2));
-    const normalizedY = (screenY / (verticalFOV / 2));
+    const normalizedX = screenX / halfHFOV;
+    const normalizedY = screenY / halfVFOV;
+
+    // Step 7: Map the normalized coordinates to screen dimensions
+    const finalX = (normalizedX + 1) / 2 * screenWidth;  // Maps [-1, 1] to [0, screenWidth]
+    const finalY = (1 - normalizedY) / 2 * screenHeight; // Maps [-1, 1] to [0, screenHeight] (flip Y-axis)
+
 
     // Step 8: Return the screen coordinates along with visibility
     return {
-        x: normalizedX,
-        y: normalizedY
+        x: finalX,
+        y: finalY
     };
 }
 
-// Example usage:
-const alpha = 90; // Eye's yaw (azimuth) in degrees
-const beta = 0;   // Eye's pitch in degrees
-const horizontalFOV = 60; // Horizontal FOV in degrees
-const verticalFOV = 30;   // Vertical FOV in degrees
-
-// Planet's position relative to Earth's center (in kilometers)
-const planetX = 5000;
-const planetY = 10000;
-const planetZ = 2000;
-
-// Call the function to get visibility and screen position
-const result = getPlanetPositionOnScreen(alpha, beta, horizontalFOV, verticalFOV, planetX, planetY, planetZ);
-
-if (result.visible) {
-    console.log("The planet is visible!");
-    console.log(`It will appear at screen coordinates: X = ${result.screenX}, Y = ${result.screenY}`);
-} else {
-    console.log("The planet is not visible.");
-}
 function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVertical,fovHorizontal) {
     windowWidth = window.innerWidth;
     windowHeight = window.innerHeight;
@@ -273,7 +258,7 @@ function updatePlanetPositions(alpha, beta, gamma) {
     planets.forEach(planet => {
         const { azimuth, altitude , meanradius} = planet;
         getPlanetPositionOnScreen(azimuth, altitude, meanradius, alpha, beta, 70, 56)
-        const position = getPlanetPositionOnScreen(azimuth, altitude, meanradius, alpha, beta, 70, 56);
+        const position = getPlanetPositionOnScreen(azimuth, altitude, meanradius, alpha, beta, 70, 56,480,640);
         const planetElement = document.getElementById(planet.name);
         planetElement.style.left = `${position.x}px`;
         planetElement.style.top = `${position.y}px`;
