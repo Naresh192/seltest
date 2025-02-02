@@ -12,7 +12,7 @@ function getOrientation() {
             var alpha = event.alpha.toFixed(2);
             var beta = event.beta.toFixed(2);
             var gamma = event.gamma.toFixed(2);
-            document.getElementById('orientation').innerText = `Alpha: ${alpha}, Beta: ${beta}, Gamma: ${gamma}`;
+            document.getElementById('orientation').innerText = Alpha: ${alpha}, Beta: ${beta}, Gamma: ${gamma};
             updatePlanetPositions(alpha, beta, gamma);
         }, false);
     } else {
@@ -35,22 +35,9 @@ async function startCamera() {
         
         const videoElement = document.getElementById('video');
         videoElement.srcObject = stream;
-        
-        // Once the video metadata (like width and height) is loaded, adjust the div size
-        videoElement.onloadedmetadata = function() {
-            // Get the video stream's actual width and height
-            const videoWidth = videoElement.videoWidth;
-            const videoHeight = videoElement.videoHeight;
-            
-            // Set the video div's dimensions to match the video stream's output
-            const videoDiv = document.getElementById('videoDiv');
-            videoDiv.style.width = `${videoWidth}px`;
-            videoDiv.style.height = `${videoHeight}px`;
-        };
     } catch (error) {
         console.error('Error accessing the camera', error);
     }
-    
 }
 
 startCamera();
@@ -88,7 +75,7 @@ function matrixMultiply(m1, m2) {
 }
 
 async function getPlanetDistance(planetName) {
-  const apiUrl = `https://api.le-systeme-solaire.net/rest/bodies/${planetName}`;
+  const apiUrl = https://api.le-systeme-solaire.net/rest/bodies/${planetName};
 
   try {
     // Fetch data from the API
@@ -98,7 +85,7 @@ async function getPlanetDistance(planetName) {
     // Extract relevant values from the data
     if (data && data.meanRadius) {
       const distance = data.meanRadius; // Distance to Earth in km (this could vary)
-      console.log(`The distance to ${planetName} from Earth is approximately: ${distance} km`);
+      console.log(The distance to ${planetName} from Earth is approximately: ${distance} km);
       return distance;
     } else {
       console.log("Data not available or planet does not exist.");
@@ -121,7 +108,7 @@ function multiplyMatrices(m, v) {
 }
 function planetToScreenCoords(azimuth, altitude, distance, alpha, beta, gamma, fovY, fovX) {
     // Convert azimuth and altitude to radians
-    const video = document.getElementById('videoDiv');
+    const video = document.getElementById('video');
     const windowWidth = video.videoWidth;
     const windowHeight = video.videoHeight;
     // Convert angles to radians
@@ -238,8 +225,8 @@ function updatePlanetPositions(alpha, beta, gamma) {
         const { azimuth, altitude , meanradius} = planet;
         const position = planetToScreenCoords(azimuth, altitude, meanradius, alpha, beta, gamma, 56, 70);
         const planetElement = document.getElementById(planet.name);
-        planetElement.style.left = `${position.x}px`;
-        planetElement.style.top = `${position.y}px`;
+        planetElement.style.left = ${position.x}px;
+        planetElement.style.top = ${position.y}px;
     });
 }
 
@@ -249,11 +236,11 @@ navigator.geolocation.getCurrentPosition(async function(position) {
     const longitude = position.coords.longitude;
 
     // Fetch astronomical data
-    const response = await fetch(`https://api.visibleplanets.dev/v3?latitude=${latitude}&longitude=${longitude}`);
+    const response = await fetch(https://api.visibleplanets.dev/v3?latitude=${latitude}&longitude=${longitude});
     const data = await response.json();
     for (let planet of data.data) {
         const planetName = planet.name.toLowerCase(); // Ensure planet name is in lowercase for the API
-        const bodyResponse = await fetch(`https://api.le-systeme-solaire.net/rest/bodies/${planetName}`);
+        const bodyResponse = await fetch(https://api.le-systeme-solaire.net/rest/bodies/${planetName});
         const bodyData = await bodyResponse.json();
 
         // Add 'meanradius' to the planet object
@@ -279,9 +266,7 @@ navigator.geolocation.getCurrentPosition(async function(position) {
 <div id="orientation" style="background-color: #f0f0f0; padding: 10px;"></div>
 <div id="pov" style="background-color: red; padding: 10px;"></div>
 
-<div id="videoDiv" style="position: relative; overflow: hidden;">
-    <video id="video" autoplay></video>
-</div>
+<video id="video" autoplay width=100% height=100%></video>
 <div id="planetOverlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
     <!-- Planet positions will be updated here -->
     <div id="planetData" style="display: none;"></div>
