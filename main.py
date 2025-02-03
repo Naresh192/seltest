@@ -106,34 +106,49 @@ function multiplyMatrices(m, v) {
     }
     return result;
 }
-function getScreenPosition(az,ar, alpha, beta, gamma, hFov, vFov) {
-    // Convert planet's position to NED (North-East-Down) vector
-    const azRad = degreesToRadians(az);
-    const altRad = degreesToRadians(ar);
-    const nedX = Math.cos(azRad) * Math.cos(altRad); // North
-    const nedY = Math.sin(azRad) * Math.cos(altRad); // East
-    const nedZ = -Math.sin(altRad); // Down
+function getScreenPosition(azimuth, altitude, alpha, beta, gamma, hFov, vFov) {
+    // Convert azimuth and altitude to radians
+    const azRad = THREE.MathUtils.degToRad(azimuth);
+    const altRad = THREE.MathUtils.degToRad(altitude);
 
-    // Compute rotation matrix from device orientation
-    const R = computeRotationMatrix(alpha, beta, gamma);
-    const [x, y, z] = matrixVectorMultiply(R, [nedX, nedY, nedZ]);
+    // Convert spherical coordinates (azimuth, altitude) to Cartesian coordinates
+    const radius = 1; // Unit sphere
+    const x = radius * Math.cos(altRad) * Math.sin(azRad); // North
+    const y = radius * Math.sin(altRad); // Up
+    const z = radius * Math.cos(altRad) * Math.cos(azRad); // East
 
-    if (z <= 0) return null; // Behind the camera
+    // Create a Three.js vector for the planet's position
+    const planetPosition = new THREE.Vector3(x, y, z);
 
-    // Convert to screen coordinates
-    const hFovRad = degreesToRadians(hFov);
-    const vFovRad = degreesToRadians(vFov);
+    // Create a rotation matrix from device orientation (alpha, beta, gamma)
+    const euler = new THREE.Euler(
+        THREE.MathUtils.degToRad(beta),  // Tilt front/back (beta)
+        THREE.MathUtils.degToRad(alpha), // Compass direction (alpha)
+        THREE.MathUtils.degToRad(gamma), // Tilt left/right (gamma)
+        'YXZ' // Rotation order
+    );
+
+    // Apply the rotation to the planet's position
+    planetPosition.applyEuler(euler);
+
+    // Check if the planet is behind the camera (z <= 0)
+    if (planetPosition.z <= 0) return null;
+
+    // Convert 3D coordinates to 2D screen coordinates
+    const hFovRad = THREE.MathUtils.degToRad(hFov);
+    const vFovRad = THREE.MathUtils.degToRad(vFov);
 
     const scaleX = 1 / Math.tan(hFovRad / 2);
     const scaleY = 1 / Math.tan(vFovRad / 2);
 
-    const screenX = (x / z) * scaleX;
-    const screenY = (y / z) * scaleY;
+    const screenX = (planetPosition.x / planetPosition.z) * scaleX;
+    const screenY = (planetPosition.y / planetPosition.z) * scaleY;
 
     // Normalize to percentage
     const percentX = (screenX * 0.5 + 0.5) * 100;
     const percentY = (0.5 - screenY * 0.5) * 100;
 
+    // Check if the planet is within the screen bounds
     if (percentX < 0 || percentX > 100 || percentY < 0 || percentY > 100) return null;
 
     return { x: percentX, y: percentY };
