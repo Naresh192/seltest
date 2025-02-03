@@ -130,7 +130,6 @@ function getScreenPosition(azimuth, altitude, alpha, beta, gamma, hFov, vFov) {
     // Apply the rotation to the planet's position
     planetPosition.applyEuler(euler);
     // Check if the planet is behind the camera (z <= 0)
-    if (planetPosition.z <= 0) return null;
 
     // Convert 3D coordinates to 2D screen coordinates
     const hFovRad = THREE.MathUtils.degToRad(hFov);
