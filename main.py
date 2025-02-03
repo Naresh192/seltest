@@ -117,7 +117,7 @@ function getScreenPosition(azimuth, altitude, alpha, beta, gamma, hFov, vFov) {
     const x = radius * Math.cos(altRad) * Math.sin(azRad); // North
     const y = radius * Math.sin(altRad); // Up
     const z = radius * Math.cos(altRad) * Math.cos(azRad); // East
-
+    document.getElementById('planetData').innerText = x;
     // Create a Three.js vector for the planet's position
     const planetPosition = new THREE.Vector3(x, y, z);
 
