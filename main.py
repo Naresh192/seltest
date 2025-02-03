@@ -111,7 +111,7 @@ function getScreenPosition(azimuth, altitude, alpha, beta, gamma, hFov, vFov) {
     // Convert azimuth and altitude to radians
     const azRad = THREE.MathUtils.degToRad(azimuth);
     const altRad = THREE.MathUtils.degToRad(altitude);
-
+    document.getElementById('planetData').innerText = azRad;
     // Convert spherical coordinates (azimuth, altitude) to Cartesian coordinates
     const radius = 1; // Unit sphere
     const x = radius * Math.cos(altRad) * Math.sin(azRad); // North
