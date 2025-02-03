@@ -22,15 +22,24 @@ orientation_js = """
     <script src="https://cdn.jsdelivr.net/npm/three/examples/js/renderers/CSS3DRenderer.js"></script>
     <script>
         // Camera feed setup
-const video = document.getElementById('video');
-navigator.mediaDevices.getUserMedia({ video: true })
-    .then(stream => {
-        video.srcObject = stream;
-    })
-    .catch(err => {
-        console.error('Error accessing camera:', err);
-    });
-
+async function startCamera() {
+    try {
+        const constraints = {
+            video: {
+                facingMode: { exact: "environment" } // Use "environment" for back camera
+            }
+        };
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        const videoTrack = stream.getVideoTracks()[0];
+        const settings = videoTrack.getSettings();
+        
+        const videoElement = document.getElementById('video');
+        videoElement.srcObject = stream;
+    } catch (error) {
+        console.error('Error accessing the camera', error);
+    }
+}
+startCamera()
 // Three.js setup
 const container = document.getElementById('container');
 const scene = new THREE.Scene();
