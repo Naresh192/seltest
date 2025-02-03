@@ -116,7 +116,6 @@ function getScreenPosition(azimuth, altitude, alpha, beta, gamma, hFov, vFov) {
     const x = radius * Math.cos(altRad) * Math.sin(azRad); // North
     const y = radius * Math.sin(altRad); // Up
     const z = radius * Math.cos(altRad) * Math.cos(azRad); // East
-    document.getElementById('pov').innerText = x;
     // Create a Three.js vector for the planet's position
     const planetPosition = new THREE.Vector3(x, y, z);
 
@@ -130,7 +129,7 @@ function getScreenPosition(azimuth, altitude, alpha, beta, gamma, hFov, vFov) {
 
     // Apply the rotation to the planet's position
     planetPosition.applyEuler(euler);
-
+    document.getElementById('pov').innerText = x;
     // Check if the planet is behind the camera (z <= 0)
     if (planetPosition.z <= 0) return null;
 
