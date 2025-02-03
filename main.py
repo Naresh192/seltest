@@ -129,7 +129,6 @@ function getScreenPosition(azimuth, altitude, alpha, beta, gamma, hFov, vFov) {
 
     // Apply the rotation to the planet's position
     planetPosition.applyEuler(euler);
-    document.getElementById('pov').innerText = x;
     // Check if the planet is behind the camera (z <= 0)
     if (planetPosition.z <= 0) return null;
 
@@ -149,7 +148,7 @@ function getScreenPosition(azimuth, altitude, alpha, beta, gamma, hFov, vFov) {
 
     // Check if the planet is within the screen bounds
     if (percentX < 0 || percentX > 100 || percentY < 0 || percentY > 100) return null;
-
+    document.getElementById('pov').innerText = x;
     return { x: percentX, y: percentY };
 }
 
