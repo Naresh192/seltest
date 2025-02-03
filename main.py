@@ -6,7 +6,6 @@ st.title("Orientation")
 # JavaScript for Device Orientation, Camera Access, and API Call
 orientation_js = """
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r146/three.min.js"></script>
-<script>
 function getOrientation() {
     if (window.DeviceOrientationEvent) {
         window.addEventListener('deviceorientation', function(event) {
