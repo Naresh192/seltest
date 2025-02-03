@@ -135,6 +135,7 @@ function getScreenPosition(azimuth, altitude, alpha, beta, gamma, hFov, vFov) {
     // Convert 3D coordinates to 2D screen coordinates
     const hFovRad = THREE.MathUtils.degToRad(hFov);
     const vFovRad = THREE.MathUtils.degToRad(vFov);
+    document.getElementById('pov').innerText = x;
 
     const scaleX = 1 / Math.tan(hFovRad / 2);
     const scaleY = 1 / Math.tan(vFovRad / 2);
@@ -148,7 +149,6 @@ function getScreenPosition(azimuth, altitude, alpha, beta, gamma, hFov, vFov) {
 
     // Check if the planet is within the screen bounds
     if (percentX < 0 || percentX > 100 || percentY < 0 || percentY > 100) return null;
-    document.getElementById('pov').innerText = x;
     return { x: percentX, y: percentY };
 }
 
