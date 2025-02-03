@@ -106,60 +106,80 @@ function multiplyMatrices(m, v) {
     }
     return result;
 }
-function planetToScreenCoords(azimuth, altitude, distance, alpha, beta, gamma, fovY, fovX) {
-    // Convert azimuth and altitude to radians
-    const video = document.getElementById('video');
-    const windowWidth = video.videoWidth;
-    const windowHeight = video.videoHeight;
-    // Convert angles to radians
-    azimuth = azimuth * Math.PI / 180;
-    altitude = altitude * Math.PI / 180;
-    fovY = fovY * Math.PI / 180;
-    fovX = fovX * Math.PI / 180;
+function getScreenPosition(az,ar, alpha, beta, gamma, hFov, vFov) {
+    // Convert planet's position to NED (North-East-Down) vector
+    const azRad = degreesToRadians(az);
+    const altRad = degreesToRadians(ar);
+    const nedX = Math.cos(azRad) * Math.cos(altRad); // North
+    const nedY = Math.sin(azRad) * Math.cos(altRad); // East
+    const nedZ = -Math.sin(altRad); // Down
 
-    // Step 1: Convert to 3D cartesian coordinates
-    let x = distance * Math.cos(altitude) * Math.sin(azimuth);
-    let z = distance * Math.sin(altitude);
-    let y = distance * Math.cos(altitude) * Math.cos(azimuth);
+    // Compute rotation matrix from device orientation
+    const R = computeRotationMatrix(alpha, beta, gamma);
+    const [x, y, z] = matrixVectorMultiply(R, [nedX, nedY, nedZ]);
 
-    // Step 2: Apply device orientation (alpha, beta, gamma - rotation angles in degrees)
-    let alphaRad = alpha * Math.PI / 180;
-    let betaRad = beta * Math.PI / 180;
-    let gammaRad = gamma * Math.PI / 180;
-    // Rotation matrices (simplified, use more advanced ones for more accurate results)
-    let rotX = [
-        [1, 0, 0],
-        [0, Math.cos(alphaRad), -Math.sin(alphaRad)],
-        [0, Math.sin(alphaRad), Math.cos(alphaRad)]
-    ];
+    if (z <= 0) return null; // Behind the camera
 
-    let rotY = [
-        [Math.cos(betaRad), 0, Math.sin(betaRad)],
-        [0, 1, 0],
-        [-Math.sin(betaRad), 0, Math.cos(betaRad)]
-    ];
+    // Convert to screen coordinates
+    const hFovRad = degreesToRadians(hFov);
+    const vFovRad = degreesToRadians(vFov);
 
-    let rotZ = [
-        [Math.cos(gammaRad), -Math.sin(gammaRad), 0],
-        [Math.sin(gammaRad), Math.cos(gammaRad), 0],
-        [0, 0, 1]
-    ];
+    const scaleX = 1 / Math.tan(hFovRad / 2);
+    const scaleY = 1 / Math.tan(vFovRad / 2);
 
-    // Multiply the rotation matrices
-    let rotated = multiplyMatrices(rotY, [x, y, z]);
-    rotated = multiplyMatrices(rotX, rotated);
-    rotated = multiplyMatrices(rotZ, rotated);
-    x = rotated[0];
-    y = rotated[1];
-    z = rotated[2];
-    // Step 3: Apply perspective projection
-    let screenX = (x / z) * fovX * windowWidth / 2 + windowWidth / 2;
-    let screenY = (y / z) * fovY * windowHeight / 2 + windowHeight / 2;
-    document.getElementById('pov').innerText = screenX+' , '+windowWidth+' , '+windowHeight+' , '+screenY;
+    const screenX = (x / z) * scaleX;
+    const screenY = (y / z) * scaleY;
 
-    return { x: screenX, y: screenY };
+    // Normalize to percentage
+    const percentX = (screenX * 0.5 + 0.5) * 100;
+    const percentY = (0.5 - screenY * 0.5) * 100;
+
+    if (percentX < 0 || percentX > 100 || percentY < 0 || percentY > 100) return null;
+
+    return { x: percentX, y: percentY };
 }
 
+function degreesToRadians(deg) {
+    return deg * Math.PI / 180;
+}
+
+function computeRotationMatrix(alpha, beta, gamma) {
+    const degToRad = Math.PI / 180;
+    const a = (alpha || 0) * degToRad;
+    const b = (beta || 0) * degToRad;
+    const c = (gamma || 0) * degToRad;
+
+    const cosA = Math.cos(a), sinA = Math.sin(a);
+    const cosB = Math.cos(b), sinB = Math.sin(b);
+    const cosC = Math.cos(c), sinC = Math.sin(c);
+
+    // ZXY rotation matrix
+    return [
+        [
+            cosA * cosC - sinA * sinB * sinC,
+            -sinA * cosB,
+            cosA * sinC + sinA * sinB * cosC
+        ],
+        [
+            sinA * cosC + cosA * sinB * sinC,
+            cosA * cosB,
+            sinA * sinC - cosA * sinB * cosC
+        ],
+        [
+            -cosB * sinC,
+            sinB,
+            cosB * cosC
+        ]
+    ];
+}
+
+function matrixVectorMultiply(m, v) {
+    return [
+        m[0][0] * v[0] + m[0][1] * v[1] + m[0][2] * v[2],
+        m[1][0] * v[0] + m[1][1] * v[1] + m[1][2] * v[2],
+        m[2][0] * v[0] + m[2][1] * v[1] + m[2][2] * v[2]
+    ];
+}
 function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVertical,fovHorizontal) {
     windowWidth = window.innerWidth;
     windowHeight = window.innerHeight;
@@ -223,10 +243,10 @@ function updatePlanetPositions(alpha, beta, gamma) {
     const planets = JSON.parse(document.getElementById('planetData').innerText);
     planets.forEach(planet => {
         const { azimuth, altitude , meanradius} = planet;
-        const position = planetToScreenCoords(azimuth, altitude, meanradius, alpha, beta, gamma, 56, 70);
+        const position = planetToScreenCoords(azimuth, altitude, meanradius, alpha, beta, gamma, 70, 56);
         const planetElement = document.getElementById(planet.name);
-        planetElement.style.left = `${position.x}px`;
-        planetElement.style.top = `${position.y}px`;
+        planetElement.style.left = `${position.x}%`;
+        planetElement.style.top = `${position.y}%`;
     });
 }
 
