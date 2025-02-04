@@ -126,7 +126,7 @@ function applyDeviceRotation(vector, alpha, beta, gamma) {
     return vector.clone().applyEuler(euler);
 }
 function projectToScreen(deviceVector, hFov, vFov, width, height) {
-    document.getElementById('pov').innerText = width+' , '+height
+    document.getElementById('pov').innerText += width+' , '+height
     if (deviceVector.z <= 0) return null; // Behind camera
 
     const hFovRad = THREE.MathUtils.degToRad(hFov);
