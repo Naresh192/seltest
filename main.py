@@ -126,7 +126,6 @@ function applyDeviceRotation(vector, alpha, beta, gamma) {
     return vector.clone().applyEuler(euler);
 }
 function projectToScreen(deviceVector, hFov, vFov, width, height) {
-    document.getElementById('pov').innerText += width+' , '+height
     if (deviceVector.z <= 0) return null; // Behind camera
 
     const hFovRad = THREE.MathUtils.degToRad(hFov);
@@ -300,8 +299,6 @@ function updatePlanetPositions(alpha, beta, gamma) {
         const video = document.getElementById('video');
         const { azimuth, altitude , meanradius} = planet;
         const worldPos = sphericalToCartesian(azimuth, altitude);
-        document.getElementById('pov').innerText += "Hello"
-        document.getElementById('pov').innerText += worldPos
         const devicePos = applyDeviceRotation(worldPos, alpha, beta, gamma);
         const screenPos = projectToScreen(devicePos, 70, 56, video.videoWidth, video.videoHeight);
         const planetElement = document.getElementById(planet.name);
