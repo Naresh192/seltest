@@ -107,6 +107,48 @@ function multiplyMatrices(m, v) {
     }
     return result;
 }
+function sphericalToCartesian(azimuth, altitude) {
+    const az = THREE.MathUtils.degToRad(azimuth);
+    const alt = THREE.MathUtils.degToRad(altitude);
+    return new THREE.Vector3(
+        Math.cos(alt) * Math.sin(az),
+        Math.cos(alt) * Math.cos(az),
+        Math.sin(alt)
+    );
+}
+function applyDeviceRotation(vector, alpha, beta, gamma) {
+    const euler = new THREE.Euler(
+        THREE.MathUtils.degToRad(beta),
+        THREE.MathUtils.degToRad(gamma),
+        THREE.MathUtils.degToRad(alpha),
+        'ZXY' // Rotation order
+    );
+    return vector.clone().applyEuler(euler);
+}
+function projectToScreen(deviceVector, hFov, vFov, width, height) {
+    if (deviceVector.z <= 0) return null; // Behind camera
+
+    const hFovRad = THREE.MathUtils.degToRad(hFov);
+    const vFovRad = THREE.MathUtils.degToRad(vFov);
+
+    const x = deviceVector.x / deviceVector.z;
+    const y = deviceVector.y / deviceVector.z;
+
+    const maxX = Math.tan(hFovRad / 2);
+    const maxY = Math.tan(vFovRad / 2);
+
+    if (Math.abs(x) > maxX || Math.abs(y) > maxY) return null; // Outside FOV
+
+    // Normalize to [-1, 1] range
+    const ndcX = x / maxX;
+    const ndcY = y / maxY;
+
+    // Convert to screen coordinates
+    return {
+        x: (ndcX + 1) * width / 2,
+        y: (1 - ndcY) * height / 2,
+    };
+}
 function getScreenPosition(azimuth, altitude, alpha, beta, gamma, hFov, vFov) {
     // Convert azimuth and altitude to radians
     const azRad = THREE.MathUtils.degToRad(azimuth);
@@ -255,11 +297,16 @@ function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVerti
 function updatePlanetPositions(alpha, beta, gamma) {
     const planets = JSON.parse(document.getElementById('planetData').innerText);
     planets.forEach(planet => {
+        const video = document.getElementById('video');
         const { azimuth, altitude , meanradius} = planet;
+        const worldPos = sphericalToCartesian(azimuth, altitude);
+        const devicePos = applyDeviceRotation(worldPos, alpha, beta, gamma);
+        const screenPos = projectToScreen(devicePos, 70, 56, video.videoWidth, video.videoHeight);
+
         const position = getScreenPosition(azimuth, altitude, meanradius, alpha, beta, gamma, 70, 56);
         const planetElement = document.getElementById(planet.name);
-        planetElement.style.left = `${position.x}%`;
-        planetElement.style.top = `${position.y}%`;
+        planetElement.style.left = `${screenPos.x}%`;
+        planetElement.style.top = `${screenPos.y}%`;
     });
 }
 
@@ -304,6 +351,8 @@ navigator.geolocation.getCurrentPosition(async function(position) {
     <!-- Planet positions will be updated here -->
     <div id="planetData" style="display: none;"></div>
 </div>
+<canvas id="overlay"></canvas>
+
 <pre id="responseData" style="background-color: #f0f0f0; padding: 10px;"></pre>
 """
 
