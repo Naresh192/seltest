@@ -136,13 +136,12 @@ function projectToScreen(deviceVector, hFov, vFov, width, height) {
 
     const maxX = Math.tan(hFovRad / 2);
     const maxY = Math.tan(vFovRad / 2);
-    document.getElementById('pov').innerText += x+' , '+maxX
     if (Math.abs(x) > maxX || Math.abs(y) > maxY) return null; // Outside FOV
 
     // Normalize to [-1, 1] range
     const ndcX = x / maxX;
     const ndcY = y / maxY;
-
+    document.getElementById('pov').innerText += (ndcX + 1) * width / 2+' , '+(1 - ndcY) * height / 2
     // Convert to screen coordinates
     return {
         x: (ndcX + 1) * width / 2,
@@ -305,8 +304,8 @@ function updatePlanetPositions(alpha, beta, gamma) {
 
         const position = getScreenPosition(azimuth, altitude, meanradius, alpha, beta, gamma, 70, 56);
         const planetElement = document.getElementById(planet.name);
-        planetElement.style.left = `${screenPos.x}%`;
-        planetElement.style.top = `${screenPos.y}%`;
+        planetElement.style.left = `${screenPos.x}px`;
+        planetElement.style.top = `${screenPos.y}px`;
     });
 }
 
