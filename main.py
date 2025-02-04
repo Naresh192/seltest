@@ -126,7 +126,6 @@ function applyDeviceRotation(vector, alpha, beta, gamma) {
     return vector.clone().applyEuler(euler);
 }
 function projectToScreen(deviceVector, hFov, vFov, width, height) {
-    if (deviceVector.z <= 0) return null; // Behind camera
 
     const hFovRad = THREE.MathUtils.degToRad(hFov);
     const vFovRad = THREE.MathUtils.degToRad(vFov);
@@ -136,12 +135,10 @@ function projectToScreen(deviceVector, hFov, vFov, width, height) {
 
     const maxX = Math.tan(hFovRad / 2);
     const maxY = Math.tan(vFovRad / 2);
-    if (Math.abs(x) > maxX || Math.abs(y) > maxY) return null; // Outside FOV
 
     // Normalize to [-1, 1] range
     const ndcX = x / maxX;
     const ndcY = y / maxY;
-    document.getElementById('pov').innerText += (ndcX + 1) * width / 2+' , '+(1 - ndcY) * height / 2
     // Convert to screen coordinates
     return {
         x: (ndcX + 1) * width / 2,
