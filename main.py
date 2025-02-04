@@ -300,6 +300,7 @@ function updatePlanetPositions(alpha, beta, gamma) {
         const video = document.getElementById('video');
         const { azimuth, altitude , meanradius} = planet;
         const worldPos = sphericalToCartesian(azimuth, altitude);
+        document.getElementById('pov').innerText += worldPos
         const devicePos = applyDeviceRotation(worldPos, alpha, beta, gamma);
         const screenPos = projectToScreen(devicePos, 70, 56, video.videoWidth, video.videoHeight);
         const planetElement = document.getElementById(planet.name);
