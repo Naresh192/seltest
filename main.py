@@ -301,8 +301,7 @@ function updatePlanetPositions(alpha, beta, gamma) {
         const { azimuth, altitude , meanradius} = planet;
         const worldPos = sphericalToCartesian(azimuth, altitude);
         const devicePos = applyDeviceRotation(worldPos, alpha, beta, gamma);
-
-        const position = getScreenPosition(azimuth, altitude, meanradius, alpha, beta, gamma, 70, 56);
+        const screenPos = projectToScreen(devicePos, 70, 56, video.videoWidth, video.videoHeight);
         const planetElement = document.getElementById(planet.name);
         planetElement.style.left = `${screenPos.x}px`;
         planetElement.style.top = `${screenPos.y}px`;
