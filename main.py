@@ -140,7 +140,12 @@ function projectToScreen(deviceVector, hFov, vFov, width, height) {
     camera.position.set(0, 0, 0);
     camera.lookAt(new THREE.Vector3(0, 0, -1));
     document.getElementById('pov').innerText = "hi";
+    try {
     const controls = new DeviceOrientationControls( camera );
+    }
+    } catch (error) {
+        document.getElementById('pov').innerText = error;
+    }
     document.getElementById('pov').innerText = "Hello";
     controls.update();
     const projected = deviceVector.clone();
