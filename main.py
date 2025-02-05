@@ -121,7 +121,7 @@ function applyDeviceRotation(vector, alpha, beta, gamma) {
         THREE.MathUtils.degToRad(beta),
         THREE.MathUtils.degToRad(gamma),
         THREE.MathUtils.degToRad(alpha),
-        'ZXY' // Rotation order
+        'YXZ' // Rotation order
     );
     const quaternion = new THREE.Quaternion().setFromEuler(euler);
     return vector.applyQuaternion(quaternion);
