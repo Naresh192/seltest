@@ -100,16 +100,7 @@ async function getPlanetDistance(planetName) {
   }
 }
 
-function multiplyMatrices(m, v) {
-    let result = [];
-    for (let i = 0; i < m.length; i++) {
-        result[i] = 0;
-        for (let j = 0; j < m[i].length; j++) {
-            result[i] += m[i][j] * v[j];
-        }
-    }
-    return result;
-}
+
 function sphericalToCartesian(azimuth, altitude) {
     const az = THREE.MathUtils.degToRad(azimuth);
     const alt = THREE.MathUtils.degToRad(altitude);
