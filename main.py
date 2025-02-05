@@ -137,7 +137,6 @@ function projectToScreen(deviceVector, hFov, vFov, width, height) {
     );
     camera.position.set(0, 0, 0);
     camera.lookAt(new THREE.Vector3(0, 0, -1));
-    const controls = new DeviceOrientationControls( camera );
 
     const projected = deviceVector.clone();
     projected.project(camera);
