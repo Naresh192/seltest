@@ -6,7 +6,9 @@ st.title("Orientation")
 # JavaScript for Device Orientation, Camera Access, and API Call
 orientation_js = """
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r127/three.min.js"></script>
-<script>
+<script type='module'>
+import { DeviceOrientationControls } from 'https://cdn.jsdelivr.net/npm/three@0.127.0/examples/jsm/controls/DeviceOrientationControls.js';
+
 function getOrientation() {
     if (window.DeviceOrientationEvent) {
         window.addEventListener('deviceorientation', function(event) {
@@ -135,6 +137,7 @@ function projectToScreen(deviceVector, hFov, vFov, width, height) {
     );
     camera.position.set(0, 0, 0);
     camera.lookAt(new THREE.Vector3(0, 0, -1));
+    const controls = new DeviceOrientationControls( camera );
 
     const projected = deviceVector.clone();
     projected.project(camera);
