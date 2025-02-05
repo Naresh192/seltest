@@ -145,7 +145,6 @@ function projectToScreen(deviceVector, hFov, vFov, width, height) {
     }  catch (error) {
         document.getElementById('pov').innerText = error;
     }
-    document.getElementById('pov').innerText = "Hello";
     controls.update();
     const projected = deviceVector.clone();
     projected.project(camera);
