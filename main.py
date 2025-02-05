@@ -6,7 +6,7 @@ st.title("Orientation")
 # JavaScript for Device Orientation, Camera Access, and API Call
 orientation_js = """
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r127/three.min.js"></script>
-<script  type='module' src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r127/three.min.js">
+<script  type='module'>
 import { DeviceOrientationControls } from 'https://cdn.jsdelivr.net/npm/three@0.127.0/examples/jsm/controls/DeviceOrientationControls.js';
 
 
