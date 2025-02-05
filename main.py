@@ -140,10 +140,12 @@ function projectToScreen(deviceVector, hFov, vFov, width, height) {
     camera.position.set(0, 0, 0);
     camera.lookAt(new THREE.Vector3(0, 0, -1));
     const controls = new DeviceOrientationControls( camera );
+    controls.update();
     const projected = deviceVector.clone();
     projected.project(camera);
     const screenX = (projected.x + 1) / 2 * window.innerWidth;
     const screenY = (-projected.y + 1) / 2 * window.innerHeight;
+    document.getElementById('pov').innerText = screenX;
     return {
         x: screenX,
         y: screenY,
