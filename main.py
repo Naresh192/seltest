@@ -112,8 +112,8 @@ function sphericalToCartesian(azimuth, altitude) {
     const alt = THREE.MathUtils.degToRad(altitude);
     return new THREE.Vector3(
         Math.cos(alt) * Math.sin(az),
-        Math.cos(alt) * Math.cos(az),
-        Math.sin(alt)
+        Math.sin(alt),
+        Math.cos(alt) * Math.cos(az)
     );
 }
 function applyDeviceRotation(vector, alpha, beta, gamma) {
