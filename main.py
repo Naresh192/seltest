@@ -8,8 +8,7 @@ orientation_js = """
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r127/three.min.js"></script>
 <script  type='module'>
 import { DeviceOrientationControls } from 'https://cdn.jsdelivr.net/npm/three@0.127.0/examples/jsm/controls/DeviceOrientationControls.js';
-</script>
-<script>
+
 
 function getOrientation() {
     if (window.DeviceOrientationEvent) {
