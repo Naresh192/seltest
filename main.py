@@ -123,10 +123,27 @@ function applyDeviceRotation(vector, alpha, beta, gamma) {
         THREE.MathUtils.degToRad(alpha),
         'ZXY' // Rotation order
     );
-    return vector.clone().applyEuler(euler);
+    const quaternion = new THREE.Quaternion().setFromEuler(euler);
+    return vector.applyQuaternion(quaternion);
 }
 function projectToScreen(deviceVector, hFov, vFov, width, height) {
+    const camera = new THREE.PerspectiveCamera(
+      vFov, // in degrees
+      width / height,
+      0.1,
+      1000
+    );
+    camera.position.set(0, 0, 0);
+    camera.lookAt(new THREE.Vector3(0, 0, -1));
 
+    const projected = deviceVector.clone();
+    projected.project(camera);
+    const screenX = (projected.x + 1) / 2 * window.innerWidth;
+    const screenY = (-projected.y + 1) / 2 * window.innerHeight;
+    return {
+        x: screenX,
+        y: screenY,
+    }
     const hFovRad = THREE.MathUtils.degToRad(hFov);
     const vFovRad = THREE.MathUtils.degToRad(vFov);
 
@@ -164,6 +181,7 @@ function getScreenPosition(azimuth, altitude, alpha, beta, gamma, hFov, vFov) {
         THREE.MathUtils.degToRad(gamma), // Tilt left/right (gamma)
         'YXZ' // Rotation order
     );
+    
 
     // Apply the rotation to the planet's position
     planetPosition.applyEuler(euler);
