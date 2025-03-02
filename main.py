@@ -86,6 +86,7 @@ async function loadPlanets(lat, lon) {
     } catch (error) {
         console.error('Failed to load planets:', error);
     }
+    document.getElementById('plan')+=position
 }
 
 function sphericalToCartesian(azimuth, altitude) {
@@ -171,6 +172,7 @@ window.addEventListener('resize', () => {
 
 <video id="video" autoplay playsinline style="width: 100%; height: auto;"></video>
 <div id="overlay"></div>
+<div id="plan"></div>
 """
 
 components.html(orientation_js, height=800)
