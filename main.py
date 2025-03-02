@@ -56,8 +56,9 @@ async function setupCamera() {
     const video = document.getElementById('video');
     try {
         const stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "environment" }
-        });
+            video: {
+                facingMode: { exact: "environment" } // Use "environment" for back camera
+            });
         video.srcObject = stream;
         await new Promise(resolve => video.onloadedmetadata = resolve);
     } catch (error) {
