@@ -86,7 +86,7 @@ async function loadPlanets(lat, lon) {
     } catch (error) {
         console.error('Failed to load planets:', error);
     }
-    document.getElementById('plan')+=position;
+    #document.getElementById('plan')+=position;
 }
 
 function sphericalToCartesian(azimuth, altitude) {
