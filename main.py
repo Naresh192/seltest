@@ -53,16 +53,20 @@ async function getOrientation() {
 }
 
 async function setupCamera() {
-    const video = document.getElementById('video');
     try {
-        const stream = await navigator.mediaDevices.getUserMedia({
+        const constraints = {
             video: {
                 facingMode: { exact: "environment" } // Use "environment" for back camera
-            }});
-        video.srcObject = stream;
-        await new Promise(resolve => video.onloadedmetadata = resolve);
+            }
+        };
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        const videoTrack = stream.getVideoTracks()[0];
+        const settings = videoTrack.getSettings();
+        
+        const videoElement = document.getElementById('video');
+        videoElement.srcObject = stream;
     } catch (error) {
-        console.error('Camera access error:', error);
+        console.error('Error accessing the camera', error);
     }
 }
 
