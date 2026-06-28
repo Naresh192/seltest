@@ -520,7 +520,11 @@ document.addEventListener('DOMContentLoaded', function() {
       planetInfoHTML += `<strong style="color: #00ff00;">TOTAL: ${planets.length} planets</strong>`;
 
       const currentOrientation = document.getElementById('orientation').innerHTML;
-      document.getElementById('orientation').innerHTML = currentOrientation + '<br><br>' + planetInfoHTML;
+      const baseText = currentOrientation.split('<br>')[0] + '<br>' +
+                      currentOrientation.split('<br>')[1] + '<br>' +
+                      currentOrientation.split('<br>')[2] + '<br>' +
+                      currentOrientation.split('<br>')[3];
+      document.getElementById('orientation').innerHTML = baseText + '<br><br>' + planetInfoHTML;
 
       const debugPanel = document.createElement('div');
       debugPanel.id = 'debugPanel';
@@ -568,6 +572,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       debugPanel.innerHTML += `<br><strong>Total planets: ${planets.length}</strong>`;
       console.log('Planet overlay children count:', planetOverlay.children.length);
+      console.log('Planet elements created, visible at center screen');
     }
     }
 });
