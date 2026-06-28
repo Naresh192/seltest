@@ -6,9 +6,14 @@ st.title("Orientation")
 # JavaScript for Device Orientation, Camera Access, and API Call
 orientation_js = """
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r127/three.min.js"></script>
-<script  type='module'>
-import { DeviceOrientationControls } from 'https://cdn.jsdelivr.net/npm/three@0.127.0/examples/jsm/controls/DeviceOrientationControls.js';
+<script>
+// Mobile detection
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+console.log('Is mobile device:', isMobile);
+console.log('User agent:', navigator.userAgent);
 
+// Display mobile status
+document.getElementById('orientation').innerHTML = 'Device: ' + (isMobile ? 'Mobile' : 'Desktop') + '<br>';
 
 let orientationAvailable = false;
 let orientationChecked = false;
@@ -57,20 +62,23 @@ function getOrientation() {
                         console.log('Device orientation permission granted');
                     } else {
                         console.log('Device orientation permission denied');
-                        document.getElementById('orientation').innerText = "Device orientation permission denied. Use manual controls below.";
+                        document.getElementById('orientation').innerText += "Device orientation permission denied. Use manual controls below.<br>";
                     }
                 })
-                .catch(console.error);
+                .catch(error => {
+                    console.error('Permission request error:', error);
+                    document.getElementById('orientation').innerText += "Permission request failed. Use manual controls below.<br>";
+                });
         }
     } else {
-        document.getElementById('orientation').innerText = "Device orientation not supported. Use manual controls below.";
+        document.getElementById('orientation').innerText += "Device orientation not supported. Use manual controls below.<br>";
         console.error("Device orientation not supported");
     }
 
     // If no orientation detected after 2 seconds, show manual controls message
     setTimeout(function() {
         if (!orientationAvailable && !orientationChecked) {
-            document.getElementById('orientation').innerText = "No device orientation detected. Use manual controls below.";
+            document.getElementById('orientation').innerText += "No device orientation detected. Use manual controls below.<br>";
             console.log('No device orientation detected after timeout');
         }
     }, 2000);
@@ -79,12 +87,16 @@ getOrientation();
 
 // Access the back camera
 async function startCamera() {
+    console.log('Starting camera...');
+    document.getElementById('orientation').innerHTML += 'Starting camera...<br>';
+
     try {
         const constraints = {
             video: {
                 facingMode: "environment" // Use "environment" for back camera (removed 'exact' for better compatibility)
             }
         };
+        console.log('Camera constraints:', constraints);
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
         const videoTrack = stream.getVideoTracks()[0];
         const settings = videoTrack.getSettings();
@@ -92,9 +104,10 @@ async function startCamera() {
         const videoElement = document.getElementById('video');
         videoElement.srcObject = stream;
         console.log('Camera started successfully', settings);
+        document.getElementById('orientation').innerHTML += 'Camera started successfully<br>';
     } catch (error) {
         console.error('Error accessing the camera', error);
-        document.getElementById('orientation').innerText = 'Camera error: ' + error.message + ' (Using placeholder background)';
+        document.getElementById('orientation').innerHTML += 'Camera error: ' + error.message + ' (Using placeholder background)<br>';
         // Set a placeholder background color if camera fails
         document.getElementById('video').style.backgroundColor = '#1a1a2e';
     }
@@ -387,28 +400,34 @@ function updatePlanetPositions(alpha, beta, gamma) {
 }
 
 // Get user's latitude and longitude
+console.log('Requesting geolocation...');
+document.getElementById('orientation').innerHTML += 'Requesting location...<br>';
+
 navigator.geolocation.getCurrentPosition(async function(position) {
     const latitude = position.coords.latitude;
     const longitude = position.coords.longitude;
     console.log('Location obtained:', { latitude, longitude });
+    document.getElementById('orientation').innerHTML += `Location: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}<br>`;
     fetchPlanetData(latitude, longitude);
 }, function(error) {
     console.error('Geolocation error:', error);
-    document.getElementById('orientation').innerText = 'Geolocation error: ' + error.message + ' (Using default location: New York)';
+    document.getElementById('orientation').innerHTML += 'Geolocation error: ' + error.message + ' (Using default location: New York)<br>';
     // Use default location (New York) if geolocation fails
     fetchPlanetData(40.7128, -74.0060);
 });
 
 async function fetchPlanetData(latitude, longitude) {
     console.log('Starting planet data fetch for location:', latitude, longitude);
-    document.getElementById('orientation').innerText = `Fetching planet data for: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}...`;
+    document.getElementById('orientation').innerHTML += `Fetching planet data for: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}...<br>`;
 
     try {
         const visiblePlanetsUrl = `https://api.visibleplanets.dev/v3?latitude=${latitude}&longitude=${longitude}`;
         console.log('Fetching from:', visiblePlanetsUrl);
+        document.getElementById('orientation').innerHTML += `API URL: ${visiblePlanetsUrl}<br>`;
 
         const response = await fetch(visiblePlanetsUrl);
         console.log('Response status:', response.status);
+        document.getElementById('orientation').innerHTML += `Response status: ${response.status}<br>`;
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -418,7 +437,7 @@ async function fetchPlanetData(latitude, longitude) {
         console.log('Planet data fetched successfully:', data);
         console.log('Number of planets:', data.data ? data.data.length : 0);
 
-        document.getElementById('orientation').innerText = `Fetched ${data.data ? data.data.length : 0} planets from API`;
+        document.getElementById('orientation').innerHTML += `Fetched ${data.data ? data.data.length : 0} planets from API<br>`;
 
         if (!data.data || data.data.length === 0) {
             console.log('No planets in response, using fallback');
@@ -453,7 +472,7 @@ async function fetchPlanetData(latitude, longitude) {
 
     } catch (error) {
         console.error('Error fetching planet data:', error);
-        document.getElementById('orientation').innerText = 'Error: ' + error.message + ' (Using fallback data)';
+        document.getElementById('orientation').innerHTML += 'Error: ' + error.message + ' (Using fallback data)<br>';
         console.log('Using fallback planet data');
 
         // Use fallback planet data if API fails
