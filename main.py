@@ -206,6 +206,9 @@ function getScreenPosition(azimuth, altitude, alpha, beta, gamma, hFov, vFov) {
     // Create a Three.js vector for the planet's position
     const planetPosition = new THREE.Vector3(x, y, z);
 
+    console.log(`Planet spherical: azimuth=${azimuth}, altitude=${altitude}`);
+    console.log(`Planet cartesian (before rotation): x=${x.toFixed(3)}, y=${y.toFixed(3)}, z=${z.toFixed(3)}`);
+
     // Create a rotation matrix from device orientation (alpha, beta, gamma)
     const euler = new THREE.Euler(
         THREE.MathUtils.degToRad(beta),  // Tilt front/back (beta)
@@ -217,8 +220,13 @@ function getScreenPosition(azimuth, altitude, alpha, beta, gamma, hFov, vFov) {
     // Apply the rotation to the planet's position
     planetPosition.applyEuler(euler);
 
+    console.log(`Planet cartesian (after rotation): x=${planetPosition.x.toFixed(3)}, y=${planetPosition.y.toFixed(3)}, z=${planetPosition.z.toFixed(3)}`);
+
     // Check if the planet is behind the camera (z <= 0)
-    if (planetPosition.z <= 0) return null;
+    if (planetPosition.z <= 0.1) {
+        console.log('Planet is behind camera');
+        return null;
+    }
     // Convert 3D coordinates to 2D screen coordinates
     const hFovRad = THREE.MathUtils.degToRad(hFov);
     const vFovRad = THREE.MathUtils.degToRad(vFov);
@@ -229,12 +237,19 @@ function getScreenPosition(azimuth, altitude, alpha, beta, gamma, hFov, vFov) {
     const screenX = (planetPosition.x / planetPosition.z) * scaleX;
     const screenY = (planetPosition.y / planetPosition.z) * scaleY;
 
+    console.log(`Screen coordinates: screenX=${screenX.toFixed(3)}, screenY=${screenY.toFixed(3)}`);
+
     // Normalize to percentage
     const percentX = (screenX * 0.5 + 0.5) * 100;
     const percentY = (0.5 - screenY * 0.5) * 100;
 
-    // Check if the planet is within the screen bounds
-    if (percentX < 0 || percentX > 100 || percentY < 0 || percentY > 100) return null;
+    console.log(`Screen percentage: percentX=${percentX.toFixed(1)}%, percentY=${percentY.toFixed(1)}%`);
+
+    // Check if the planet is within the screen bounds (with some margin)
+    if (percentX < -10 || percentX > 110 || percentY < -10 || percentY > 110) {
+        console.log('Planet is outside screen bounds');
+        return null;
+    }
     return { x: percentX, y: percentY };
 }
 
@@ -403,24 +418,47 @@ async function fetchPlanetData(latitude, longitude) {
         // Display planet data
         document.getElementById('planetData').innerText = JSON.stringify(data.data);
         // Create divs for each planet
-        const planetOverlay = document.getElementById('planetOverlay');
-        data.data.forEach(planet => {
-            const planetDiv = document.createElement('div');
-            planetDiv.id = planet.name;
-            planetDiv.style.position = 'absolute';
-            planetDiv.style.color = 'white';
-            planetDiv.style.fontSize = '20px';
-            planetDiv.style.fontWeight = 'bold';
-            planetDiv.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
-            planetDiv.innerText = planet.name;
-            planetOverlay.appendChild(planetDiv);
-        });
+        createPlanetElements(data.data);
         console.log('Planet elements created, calling initial update');
         updatePlanetPositions(0, 0, 0); // Initial update
     } catch (error) {
         console.error('Error fetching planet data:', error);
-        document.getElementById('orientation').innerText = 'Error fetching planet data: ' + error.message;
+        document.getElementById('orientation').innerText = 'Error fetching planet data: ' + error.message + ' (Using fallback data)';
+        // Use fallback planet data if API fails
+        const fallbackPlanets = [
+            { name: 'Venus', azimuth: 45, altitude: 30, meanradius: 6051 },
+            { name: 'Mars', azimuth: 120, altitude: 20, meanradius: 3389 },
+            { name: 'Jupiter', azimuth: 200, altitude: 45, meanradius: 69911 },
+            { name: 'Saturn', azimuth: 280, altitude: 15, meanradius: 58232 }
+        ];
+        document.getElementById('planetData').innerText = JSON.stringify(fallbackPlanets);
+        createPlanetElements(fallbackPlanets);
+        updatePlanetPositions(0, 0, 0);
     }
+}
+
+function createPlanetElements(planets) {
+    const planetOverlay = document.getElementById('planetOverlay');
+    // Clear existing planet elements
+    planetOverlay.innerHTML = '<div id="planetData" style="display: none;"></div>';
+
+    planets.forEach(planet => {
+        const planetDiv = document.createElement('div');
+        planetDiv.id = planet.name;
+        planetDiv.style.position = 'absolute';
+        planetDiv.style.color = 'white';
+        planetDiv.style.fontSize = '24px';
+        planetDiv.style.fontWeight = 'bold';
+        planetDiv.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
+        planetDiv.style.padding = '5px 10px';
+        planetDiv.style.backgroundColor = 'rgba(0,0,0,0.3)';
+        planetDiv.style.borderRadius = '5px';
+        planetDiv.style.pointerEvents = 'none';
+        planetDiv.innerText = planet.name;
+        planetDiv.style.display = 'block'; // Ensure it's visible
+        planetOverlay.appendChild(planetDiv);
+        console.log(`Created planet element for ${planet.name}`);
+    });
 }
 </script>
 <div id="orientation" style="background-color: #f0f0f0; padding: 10px;"></div>
