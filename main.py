@@ -481,13 +481,26 @@ function createPlanetElements(planets) {
     // Clear existing planet elements
     planetOverlay.innerHTML = '<div id="planetData" style="display: none;"></div>';
 
+    // Create planet info display in UI
+    let planetInfoHTML = '<strong style="color: #00ff00;">PLANETS LOADED:</strong><br>';
+    planets.forEach((planet, index) => {
+        planetInfoHTML += `<span style="color: white;">${index + 1}. ${planet.name}</span> - `;
+        planetInfoHTML += `<span style="color: yellow;">Az: ${planet.azimuth}°</span>, `;
+        planetInfoHTML += `<span style="color: cyan;">Alt: ${planet.altitude}°</span><br>`;
+    });
+    planetInfoHTML += `<strong style="color: #00ff00;">TOTAL: ${planets.length} planets</strong>`;
+
+    // Update orientation div with planet info
+    const currentOrientation = document.getElementById('orientation').innerText;
+    document.getElementById('orientation').innerHTML = currentOrientation + '<br><br>' + planetInfoHTML;
+
     // Add debug panel
     const debugPanel = document.createElement('div');
     debugPanel.id = 'debugPanel';
     debugPanel.style.position = 'fixed';
     debugPanel.style.top = '60px';
     debugPanel.style.right = '10px';
-    debugPanel.style.background = 'rgba(0,0,0,0.8)';
+    debugPanel.style.background = 'rgba(0,0,0,0.9)';
     debugPanel.style.color = '#00ff00';
     debugPanel.style.padding = '10px';
     debugPanel.style.borderRadius = '5px';
@@ -496,7 +509,8 @@ function createPlanetElements(planets) {
     debugPanel.style.maxWidth = '300px';
     debugPanel.style.maxHeight = '200px';
     debugPanel.style.overflow = 'auto';
-    debugPanel.innerHTML = '<strong>Planet Debug Info:</strong><br>';
+    debugPanel.style.border = '2px solid #00ff00';
+    debugPanel.innerHTML = '<strong>PLANET DEBUG INFO:</strong><br>';
     planetOverlay.appendChild(debugPanel);
 
     planets.forEach((planet, index) => {
@@ -505,14 +519,15 @@ function createPlanetElements(planets) {
         planetDiv.id = planet.name;
         planetDiv.style.position = 'absolute';
         planetDiv.style.color = 'white';
-        planetDiv.style.fontSize = '24px';
+        planetDiv.style.fontSize = '28px';
         planetDiv.style.fontWeight = 'bold';
         planetDiv.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
-        planetDiv.style.padding = '5px 10px';
-        planetDiv.style.backgroundColor = 'rgba(255,0,0,0.5)'; // Red background for visibility
-        planetDiv.style.borderRadius = '5px';
+        planetDiv.style.padding = '8px 12px';
+        planetDiv.style.backgroundColor = 'rgba(255,0,0,0.7)'; // Red background for visibility
+        planetDiv.style.borderRadius = '8px';
         planetDiv.style.pointerEvents = 'none';
         planetDiv.style.zIndex = '100';
+        planetDiv.style.border = '3px solid yellow';
         planetDiv.innerText = planet.name;
         planetDiv.style.display = 'block'; // Ensure it's visible
         planetDiv.style.left = '50%'; // Start at center for debugging
@@ -525,7 +540,7 @@ function createPlanetElements(planets) {
         console.log(`Created planet element for ${planet.name}, total elements now: ${planetOverlay.children.length}`);
     });
 
-    debugPanel.innerHTML += `<br>Total planets: ${planets.length}`;
+    debugPanel.innerHTML += `<br><strong>Total planets: ${planets.length}</strong>`;
     console.log('Planet overlay children count:', planetOverlay.children.length);
 }
 </script>
