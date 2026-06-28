@@ -65,7 +65,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     // Only update if we have non-zero values (actual sensor data)
                     if (event.alpha !== null || event.beta !== null || event.gamma !== null) {
-                        document.getElementById('orientation').innerHTML += `Alpha: ${alpha}, Beta: ${beta}, Gamma: ${gamma} (Device)<br>`;
+                        // Update orientation display without adding new lines
+                        const orientationDiv = document.getElementById('orientation');
+                        const baseText = orientationDiv.innerHTML.split('<br>')[0] + '<br>' +
+                                          orientationDiv.innerHTML.split('<br>')[1] + '<br>' +
+                                          orientationDiv.innerHTML.split('<br>')[2] + '<br>' +
+                                          orientationDiv.innerHTML.split('<br>')[3];
+                        orientationDiv.innerHTML = baseText + `<br>Orientation: A:${alpha}° B:${beta}° G:${gamma}° (Device)`;
                         console.log('Device orientation:', { alpha, beta, gamma });
                         updatePlanetPositions(parseFloat(alpha), parseFloat(beta), parseFloat(gamma));
                         // Update manual sliders to match device orientation
@@ -592,7 +598,13 @@ document.getElementById('alphaSlider').addEventListener('input', function(e) {
     document.getElementById('alphaValue').textContent = alpha;
     const beta = parseFloat(document.getElementById('betaSlider').value);
     const gamma = parseFloat(document.getElementById('gammaSlider').value);
-    document.getElementById('orientation').innerText = `Alpha: ${alpha}, Beta: ${beta}, Gamma: ${gamma} (Manual)`;
+    // Update orientation display without adding new lines
+    const orientationDiv = document.getElementById('orientation');
+    const baseText = orientationDiv.innerHTML.split('<br>')[0] + '<br>' +
+                      orientationDiv.innerHTML.split('<br>')[1] + '<br>' +
+                      orientationDiv.innerHTML.split('<br>')[2] + '<br>' +
+                      orientationDiv.innerHTML.split('<br>')[3];
+    orientationDiv.innerHTML = baseText + `<br>Orientation: A:${alpha}° B:${beta}° G:${gamma}° (Manual)`;
     if (window.updatePlanetPositions) {
         window.updatePlanetPositions(alpha, beta, gamma);
     }
@@ -603,7 +615,13 @@ document.getElementById('betaSlider').addEventListener('input', function(e) {
     document.getElementById('betaValue').textContent = beta;
     const alpha = parseFloat(document.getElementById('alphaSlider').value);
     const gamma = parseFloat(document.getElementById('gammaSlider').value);
-    document.getElementById('orientation').innerText = `Alpha: ${alpha}, Beta: ${beta}, Gamma: ${gamma} (Manual)`;
+    // Update orientation display without adding new lines
+    const orientationDiv = document.getElementById('orientation');
+    const baseText = orientationDiv.innerHTML.split('<br>')[0] + '<br>' +
+                      orientationDiv.innerHTML.split('<br>')[1] + '<br>' +
+                      orientationDiv.innerHTML.split('<br>')[2] + '<br>' +
+                      orientationDiv.innerHTML.split('<br>')[3];
+    orientationDiv.innerHTML = baseText + `<br>Orientation: A:${alpha}° B:${beta}° G:${gamma}° (Manual)`;
     if (window.updatePlanetPositions) {
         window.updatePlanetPositions(alpha, beta, gamma);
     }
@@ -614,7 +632,13 @@ document.getElementById('gammaSlider').addEventListener('input', function(e) {
     document.getElementById('gammaValue').textContent = gamma;
     const alpha = parseFloat(document.getElementById('alphaSlider').value);
     const beta = parseFloat(document.getElementById('betaSlider').value);
-    document.getElementById('orientation').innerText = `Alpha: ${alpha}, Beta: ${beta}, Gamma: ${gamma} (Manual)`;
+    // Update orientation display without adding new lines
+    const orientationDiv = document.getElementById('orientation');
+    const baseText = orientationDiv.innerHTML.split('<br>')[0] + '<br>' +
+                      orientationDiv.innerHTML.split('<br>')[1] + '<br>' +
+                      orientationDiv.innerHTML.split('<br>')[2] + '<br>' +
+                      orientationDiv.innerHTML.split('<br>')[3];
+    orientationDiv.innerHTML = baseText + `<br>Orientation: A:${alpha}° B:${beta}° G:${gamma}° (Manual)`;
     if (window.updatePlanetPositions) {
         window.updatePlanetPositions(alpha, beta, gamma);
     }
