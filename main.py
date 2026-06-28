@@ -400,19 +400,45 @@ navigator.geolocation.getCurrentPosition(async function(position) {
 });
 
 async function fetchPlanetData(latitude, longitude) {
+    console.log('Starting planet data fetch for location:', latitude, longitude);
+
     try {
-        const response = await fetch(`https://api.visibleplanets.dev/v3?latitude=${latitude}&longitude=${longitude}`);
+        const visiblePlanetsUrl = `https://api.visibleplanets.dev/v3?latitude=${latitude}&longitude=${longitude}`;
+        console.log('Fetching from:', visiblePlanetsUrl);
+
+        const response = await fetch(visiblePlanetsUrl);
+        console.log('Response status:', response.status);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
-        console.log('Planet data fetched:', data);
+        console.log('Planet data fetched successfully:', data);
+        console.log('Number of planets:', data.data ? data.data.length : 0);
+
+        if (!data.data || data.data.length === 0) {
+            console.log('No planets in response, using fallback');
+            throw new Error('No planets data received');
+        }
 
         for (let planet of data.data) {
-            const planetName = planet.name.toLowerCase(); // Ensure planet name is in lowercase for the API
-            const bodyResponse = await fetch(`https://api.le-systeme-solaire.net/rest/bodies/${planetName}`);
-            const bodyData = await bodyResponse.json();
+            console.log('Processing planet:', planet.name);
+            const planetName = planet.name.toLowerCase();
+            const bodyUrl = `https://api.le-systeme-solaire.net/rest/bodies/${planetName}`;
+            console.log('Fetching planet details from:', bodyUrl);
 
-            // Add 'meanradius' to the planet object
-            planet.meanradius = bodyData.meanRadius || 'N/A';  // Add meanradius, if available
+            try {
+                const bodyResponse = await fetch(bodyUrl);
+                const bodyData = await bodyResponse.json();
+                planet.meanradius = bodyData.meanRadius || 'N/A';
+                console.log(`${planet.name} radius: ${planet.meanradius}`);
+            } catch (bodyError) {
+                console.error('Error fetching planet details for', planet.name, ':', bodyError);
+                planet.meanradius = 'N/A';
+            }
         }
+
         // Display the response data in the UI
         document.getElementById('responseData').innerText = JSON.stringify(data, null, 2);
         // Display planet data
@@ -421,9 +447,12 @@ async function fetchPlanetData(latitude, longitude) {
         createPlanetElements(data.data);
         console.log('Planet elements created, calling initial update');
         updatePlanetPositions(0, 0, 0); // Initial update
+
     } catch (error) {
         console.error('Error fetching planet data:', error);
         document.getElementById('orientation').innerText = 'Error fetching planet data: ' + error.message + ' (Using fallback data)';
+        console.log('Using fallback planet data');
+
         // Use fallback planet data if API fails
         const fallbackPlanets = [
             { name: 'Venus', azimuth: 45, altitude: 30, meanradius: 6051 },
@@ -431,6 +460,7 @@ async function fetchPlanetData(latitude, longitude) {
             { name: 'Jupiter', azimuth: 200, altitude: 45, meanradius: 69911 },
             { name: 'Saturn', azimuth: 280, altitude: 15, meanradius: 58232 }
         ];
+
         document.getElementById('planetData').innerText = JSON.stringify(fallbackPlanets);
         createPlanetElements(fallbackPlanets);
         updatePlanetPositions(0, 0, 0);
@@ -438,11 +468,18 @@ async function fetchPlanetData(latitude, longitude) {
 }
 
 function createPlanetElements(planets) {
+    console.log('Creating planet elements for', planets.length, 'planets');
     const planetOverlay = document.getElementById('planetOverlay');
+    if (!planetOverlay) {
+        console.error('Planet overlay element not found');
+        return;
+    }
+
     // Clear existing planet elements
     planetOverlay.innerHTML = '<div id="planetData" style="display: none;"></div>';
 
-    planets.forEach(planet => {
+    planets.forEach((planet, index) => {
+        console.log(`Creating element ${index + 1}/${planets.length} for ${planet.name}`);
         const planetDiv = document.createElement('div');
         planetDiv.id = planet.name;
         planetDiv.style.position = 'absolute';
@@ -454,11 +491,16 @@ function createPlanetElements(planets) {
         planetDiv.style.backgroundColor = 'rgba(0,0,0,0.3)';
         planetDiv.style.borderRadius = '5px';
         planetDiv.style.pointerEvents = 'none';
+        planetDiv.style.zIndex = '100';
         planetDiv.innerText = planet.name;
         planetDiv.style.display = 'block'; // Ensure it's visible
+        planetDiv.style.left = '50%'; // Start at center for debugging
+        planetDiv.style.top = '50%';
         planetOverlay.appendChild(planetDiv);
-        console.log(`Created planet element for ${planet.name}`);
+        console.log(`Created planet element for ${planet.name}, total elements now: ${planetOverlay.children.length}`);
     });
+
+    console.log('Planet overlay children count:', planetOverlay.children.length);
 }
 </script>
 <div id="orientation" style="background-color: #f0f0f0; padding: 10px;"></div>
