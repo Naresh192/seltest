@@ -401,6 +401,7 @@ navigator.geolocation.getCurrentPosition(async function(position) {
 
 async function fetchPlanetData(latitude, longitude) {
     console.log('Starting planet data fetch for location:', latitude, longitude);
+    document.getElementById('orientation').innerText = `Fetching planet data for: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}...`;
 
     try {
         const visiblePlanetsUrl = `https://api.visibleplanets.dev/v3?latitude=${latitude}&longitude=${longitude}`;
@@ -416,6 +417,8 @@ async function fetchPlanetData(latitude, longitude) {
         const data = await response.json();
         console.log('Planet data fetched successfully:', data);
         console.log('Number of planets:', data.data ? data.data.length : 0);
+
+        document.getElementById('orientation').innerText = `Fetched ${data.data ? data.data.length : 0} planets from API`;
 
         if (!data.data || data.data.length === 0) {
             console.log('No planets in response, using fallback');
@@ -450,7 +453,7 @@ async function fetchPlanetData(latitude, longitude) {
 
     } catch (error) {
         console.error('Error fetching planet data:', error);
-        document.getElementById('orientation').innerText = 'Error fetching planet data: ' + error.message + ' (Using fallback data)';
+        document.getElementById('orientation').innerText = 'Error: ' + error.message + ' (Using fallback data)';
         console.log('Using fallback planet data');
 
         // Use fallback planet data if API fails
@@ -478,6 +481,24 @@ function createPlanetElements(planets) {
     // Clear existing planet elements
     planetOverlay.innerHTML = '<div id="planetData" style="display: none;"></div>';
 
+    // Add debug panel
+    const debugPanel = document.createElement('div');
+    debugPanel.id = 'debugPanel';
+    debugPanel.style.position = 'fixed';
+    debugPanel.style.top = '60px';
+    debugPanel.style.right = '10px';
+    debugPanel.style.background = 'rgba(0,0,0,0.8)';
+    debugPanel.style.color = '#00ff00';
+    debugPanel.style.padding = '10px';
+    debugPanel.style.borderRadius = '5px';
+    debugPanel.style.fontSize = '12px';
+    debugPanel.style.zIndex = '1000';
+    debugPanel.style.maxWidth = '300px';
+    debugPanel.style.maxHeight = '200px';
+    debugPanel.style.overflow = 'auto';
+    debugPanel.innerHTML = '<strong>Planet Debug Info:</strong><br>';
+    planetOverlay.appendChild(debugPanel);
+
     planets.forEach((planet, index) => {
         console.log(`Creating element ${index + 1}/${planets.length} for ${planet.name}`);
         const planetDiv = document.createElement('div');
@@ -488,7 +509,7 @@ function createPlanetElements(planets) {
         planetDiv.style.fontWeight = 'bold';
         planetDiv.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
         planetDiv.style.padding = '5px 10px';
-        planetDiv.style.backgroundColor = 'rgba(0,0,0,0.3)';
+        planetDiv.style.backgroundColor = 'rgba(255,0,0,0.5)'; // Red background for visibility
         planetDiv.style.borderRadius = '5px';
         planetDiv.style.pointerEvents = 'none';
         planetDiv.style.zIndex = '100';
@@ -497,9 +518,14 @@ function createPlanetElements(planets) {
         planetDiv.style.left = '50%'; // Start at center for debugging
         planetDiv.style.top = '50%';
         planetOverlay.appendChild(planetDiv);
+
+        // Add to debug panel
+        debugPanel.innerHTML += `${planet.name}: Az=${planet.azimuth}°, Alt=${planet.altitude}°<br>`;
+
         console.log(`Created planet element for ${planet.name}, total elements now: ${planetOverlay.children.length}`);
     });
 
+    debugPanel.innerHTML += `<br>Total planets: ${planets.length}`;
     console.log('Planet overlay children count:', planetOverlay.children.length);
 }
 </script>
