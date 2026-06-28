@@ -6,26 +6,32 @@ st.title("Orientation")
 # JavaScript for Device Orientation, Camera Access, and API Call
 orientation_js = """
 <script>
-// Basic JavaScript execution test
-console.log('JavaScript execution started');
-document.getElementById('orientation').innerHTML = 'JavaScript executing...<br>';
+// Wait for DOM to be ready
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, starting JavaScript');
+    const orientationElement = document.getElementById('orientation');
+    if (!orientationElement) {
+        console.error('Orientation element not found');
+        return;
+    }
+    orientationElement.innerHTML = 'JavaScript executing...<br>';
 
-// Load Three.js
-const threeScript = document.createElement('script');
-threeScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r127/three.min.js';
-threeScript.onload = function() {
-    console.log('Three.js loaded successfully');
-    document.getElementById('orientation').innerHTML += 'Three.js loaded successfully<br>';
-    initializeApp();
-};
-threeScript.onerror = function() {
-    console.error('Three.js failed to load');
-    document.getElementById('orientation').innerHTML += 'Three.js failed to load<br>';
-    initializeApp(); // Continue anyway
-};
-document.head.appendChild(threeScript);
+    // Load Three.js
+    const threeScript = document.createElement('script');
+    threeScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r127/three.min.js';
+    threeScript.onload = function() {
+        console.log('Three.js loaded successfully');
+        orientationElement.innerHTML += 'Three.js loaded successfully<br>';
+        initializeApp();
+    };
+    threeScript.onerror = function() {
+        console.error('Three.js failed to load');
+        orientationElement.innerHTML += 'Three.js failed to load<br>';
+        initializeApp(); // Continue anyway
+    };
+    document.head.appendChild(threeScript);
 
-function initializeApp() {
+    function initializeApp() {
     // Mobile detection
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     console.log('Is mobile device:', isMobile);
@@ -557,7 +563,8 @@ function initializeApp() {
       debugPanel.innerHTML += `<br><strong>Total planets: ${planets.length}</strong>`;
       console.log('Planet overlay children count:', planetOverlay.children.length);
     }
-}
+    }
+});
 </script>
 <div id="orientation" style="background-color: #f0f0f0; padding: 10px;"></div>
 
