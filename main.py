@@ -1,663 +1,253 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.title("Orientation")
+st.title("AR Planet Viewer")
 
-# JavaScript for Device Orientation, Camera Access, and API Call
 orientation_js = """
+<!-- ========== HTML FIRST so DOM elements exist ========== -->
+<div id="statusBar" style="background:#222;color:#0f0;padding:8px 12px;font-family:monospace;font-size:13px;max-height:120px;overflow-y:auto;border-bottom:2px solid #0f0;">
+  Loading...
+</div>
+
+<div style="position:relative;width:100%;height:480px;background:#1a1a2e;">
+  <video id="video" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover;"></video>
+  <div id="planetOverlay" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;">
+    <div id="planetData" style="display:none;"></div>
+  </div>
+</div>
+
+<div id="orientationDisplay" style="background:#333;color:#fff;padding:6px 12px;font-family:monospace;font-size:13px;">
+  Orientation: waiting...
+</div>
+
+<div style="background:#f5f5f5;padding:10px;">
+  <strong>Manual Orientation Controls</strong>
+  <div style="margin:4px 0;">
+    <label>Alpha (Compass): <span id="alphaValue">0</span>deg</label><br>
+    <input type="range" id="alphaSlider" min="0" max="360" value="0" style="width:100%;">
+  </div>
+  <div style="margin:4px 0;">
+    <label>Beta (Tilt): <span id="betaValue">0</span>deg</label><br>
+    <input type="range" id="betaSlider" min="-180" max="180" value="0" style="width:100%;">
+  </div>
+  <div style="margin:4px 0;">
+    <label>Gamma (Roll): <span id="gammaValue">0</span>deg</label><br>
+    <input type="range" id="gammaSlider" min="-90" max="90" value="0" style="width:100%;">
+  </div>
+</div>
+
+<pre id="responseData" style="background:#f0f0f0;padding:10px;font-size:11px;max-height:200px;overflow:auto;display:none;"></pre>
+
+<!-- ========== Three.js loaded BEFORE our code ========== -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r127/three.min.js"></script>
+
 <script>
-// Wait for DOM to be ready
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded, starting JavaScript');
-    const orientationElement = document.getElementById('orientation');
-    if (!orientationElement) {
-        console.error('Orientation element not found');
-        return;
+(function() {
+  // --- Status logging (replaces content, never grows) ---
+  var statusLines = [];
+  function setStatus(msg) {
+    statusLines.push(msg);
+    if (statusLines.length > 6) statusLines.shift();
+    document.getElementById('statusBar').innerHTML = statusLines.join('<br>');
+    console.log('[AR]', msg);
+  }
+
+  setStatus('Script started');
+
+  // Check Three.js
+  if (typeof THREE === 'undefined') {
+    setStatus('ERROR: Three.js failed to load');
+    return;
+  }
+  setStatus('Three.js loaded OK');
+
+  // --- Camera ---
+  (async function startCamera() {
+    try {
+      var stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      document.getElementById('video').srcObject = stream;
+      setStatus('Camera started');
+    } catch(e) {
+      setStatus('Camera error: ' + e.message);
+      document.getElementById('video').style.background = '#1a1a2e';
     }
-    orientationElement.innerHTML = 'JavaScript executing...<br>';
+  })();
 
-    // Load Three.js
-    const threeScript = document.createElement('script');
-    threeScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r127/three.min.js';
-    threeScript.onload = function() {
-        console.log('Three.js loaded successfully');
-        orientationElement.innerHTML += 'Three.js loaded successfully<br>';
-        initializeApp();
-    };
-    threeScript.onerror = function() {
-        console.error('Three.js failed to load');
-        orientationElement.innerHTML += 'Three.js failed to load<br>';
-        initializeApp(); // Continue anyway
-    };
-    document.head.appendChild(threeScript);
+  // --- Orientation ---
+  var currentAlpha = 0, currentBeta = 0, currentGamma = 0;
 
-    function initializeApp() {
-    // Mobile detection
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    console.log('Is mobile device:', isMobile);
-    console.log('User agent:', navigator.userAgent);
+  function updateOrientationDisplay(a, b, g, source) {
+    document.getElementById('orientationDisplay').innerText =
+      'A:' + a.toFixed(1) + ' B:' + b.toFixed(1) + ' G:' + g.toFixed(1) + ' (' + source + ')';
+  }
 
-    // Display mobile status
-    document.getElementById('orientation').innerHTML += 'Device: ' + (isMobile ? 'Mobile' : 'Desktop') + '<br>';
-
-    let orientationAvailable = false;
-    let orientationChecked = false;
-
-    function getOrientation() {
-        if (window.DeviceOrientationEvent) {
-            window.addEventListener('deviceorientation', function(event) {
-                if (!orientationChecked) {
-                    orientationChecked = true;
-                    // Check if we're getting actual orientation data (not all null/undefined)
-                    if (event.alpha !== null || event.beta !== null || event.gamma !== null) {
-                        orientationAvailable = true;
-                        console.log('Device orientation is available');
-                    } else {
-                        console.log('Device orientation not available (sensors not detected)');
-                        document.getElementById('orientation').innerHTML += "Device orientation sensors not detected. Use manual controls below.<br>";
-                    }
-                }
-
-                if (orientationAvailable) {
-                    var alpha = event.alpha ? event.alpha.toFixed(2) : '0.00';
-                    var beta = event.beta ? event.beta.toFixed(2) : '0.00';
-                    var gamma = event.gamma ? event.gamma.toFixed(2) : '0.00';
-
-                    // Only update if we have non-zero values (actual sensor data)
-                    if (event.alpha !== null || event.beta !== null || event.gamma !== null) {
-                        // Update orientation display without adding new lines
-                        const orientationDiv = document.getElementById('orientation');
-                        const baseText = orientationDiv.innerHTML.split('<br>')[0] + '<br>' +
-                                          orientationDiv.innerHTML.split('<br>')[1] + '<br>' +
-                                          orientationDiv.innerHTML.split('<br>')[2] + '<br>' +
-                                          orientationDiv.innerHTML.split('<br>')[3];
-                        orientationDiv.innerHTML = baseText + `<br>Orientation: A:${alpha}° B:${beta}° G:${gamma}° (Device)`;
-                        console.log('Device orientation:', { alpha, beta, gamma });
-                        updatePlanetPositions(parseFloat(alpha), parseFloat(beta), parseFloat(gamma));
-                        // Update manual sliders to match device orientation
-                        document.getElementById('alphaSlider').value = alpha;
-                        document.getElementById('betaSlider').value = beta;
-                        document.getElementById('gammaSlider').value = gamma;
-                        document.getElementById('alphaValue').textContent = alpha;
-                        document.getElementById('betaValue').textContent = beta;
-                        document.getElementById('gammaValue').textContent = gamma;
-                    }
-                }
-            }, false);
-
-            // iOS 13+ requires permission request
-            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-                DeviceOrientationEvent.requestPermission()
-                    .then(permissionState => {
-                        if (permissionState === 'granted') {
-                            console.log('Device orientation permission granted');
-                        } else {
-                            console.log('Device orientation permission denied');
-                            document.getElementById('orientation').innerHTML += "Device orientation permission denied. Use manual controls below.<br>";
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Permission request error:', error);
-                        document.getElementById('orientation').innerHTML += "Permission request failed. Use manual controls below.<br>";
-                    });
-            }
-        } else {
-            document.getElementById('orientation').innerHTML += "Device orientation not supported. Use manual controls below.<br>";
-            console.error("Device orientation not supported");
-        }
-
-        // If no orientation detected after 2 seconds, show manual controls message
-        setTimeout(function() {
-            if (!orientationAvailable && !orientationChecked) {
-                document.getElementById('orientation').innerHTML += "No device orientation detected. Use manual controls below.<br>";
-                console.log('No device orientation detected after timeout');
-            }
-        }, 2000);
+  if (window.DeviceOrientationEvent) {
+    // iOS 13+ permission
+    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+      DeviceOrientationEvent.requestPermission().then(function(state) {
+        if (state === 'granted') setStatus('Orientation permission granted');
+        else setStatus('Orientation permission denied');
+      }).catch(function(e) { setStatus('Orientation permission error'); });
     }
-    getOrientation();
-
-    // Access the back camera
-    async function startCamera() {
-        console.log('Starting camera...');
-        document.getElementById('orientation').innerHTML += 'Starting camera...<br>';
-
-        try {
-            const constraints = {
-                video: {
-                    facingMode: "environment" // Use "environment" for back camera (removed 'exact' for better compatibility)
-                }
-            };
-            console.log('Camera constraints:', constraints);
-            const stream = await navigator.mediaDevices.getUserMedia(constraints);
-            const videoTrack = stream.getVideoTracks()[0];
-            const settings = videoTrack.getSettings();
-
-            const videoElement = document.getElementById('video');
-            videoElement.srcObject = stream;
-            console.log('Camera started successfully', settings);
-            document.getElementById('orientation').innerHTML += 'Camera started successfully<br>';
-        } catch (error) {
-            console.error('Error accessing the camera', error);
-            document.getElementById('orientation').innerHTML += 'Camera error: ' + error.message + ' (Using placeholder background)<br>';
-            // Set a placeholder background color if camera fails
-            document.getElementById('video').style.backgroundColor = '#1a1a2e';
-        }
-    }
-
-    startCamera();
-
-    // Helper functions
-    function rotateVector(x, y, z, rotationMatrix, pitchMatrix, rollMatrix) {
-      const result = multiplyMatrices(rotationMatrix, pitchMatrix, rollMatrix);
-      const rotatedX = result[0][0] * x + result[0][1] * y + result[0][2] * z;
-      const rotatedY = result[1][0] * x + result[1][1] * y + result[1][2] * z;
-      const rotatedZ = result[2][0] * x + result[2][1] * y + result[2][2] * z;
-      return [rotatedX, rotatedY, rotatedZ];
-    }
-
-    function multiplyMatrices(m1, m2, m3) {
-      const intermediate = matrixMultiply(m1, m2);
-      return matrixMultiply(intermediate, m3);
-    }
-
-    function matrixMultiply(m1, m2) {
-      const result = [];
-      for (let i = 0; i < m1.length; i++) {
-        result[i] = [];
-        for (let j = 0; j < m2[0].length; j++) {
-          result[i][j] = 0;
-          for (let k = 0; k < m1[0].length; k++) {
-            result[i][j] += m1[i][k] * m2[k][j];
-          }
-        }
+    window.addEventListener('deviceorientation', function(e) {
+      if (e.alpha !== null || e.beta !== null || e.gamma !== null) {
+        currentAlpha = e.alpha || 0;
+        currentBeta = e.beta || 0;
+        currentGamma = e.gamma || 0;
+        updateOrientationDisplay(currentAlpha, currentBeta, currentGamma, 'Device');
+        document.getElementById('alphaSlider').value = currentAlpha;
+        document.getElementById('betaSlider').value = currentBeta;
+        document.getElementById('gammaSlider').value = currentGamma;
+        document.getElementById('alphaValue').textContent = currentAlpha.toFixed(0);
+        document.getElementById('betaValue').textContent = currentBeta.toFixed(0);
+        document.getElementById('gammaValue').textContent = currentGamma.toFixed(0);
+        updatePlanetPositions(currentAlpha, currentBeta, currentGamma);
       }
-      return result;
-    }
+    }, false);
+  }
+  setTimeout(function() { setStatus('Orientation: ' + (currentAlpha || currentBeta || currentGamma ? 'active' : 'no sensor, use sliders')); }, 2000);
 
-    async function getPlanetDistance(planetName) {
-      const apiUrl = `https://api.le-systeme-solaire.net/rest/bodies/${planetName}`;
+  // --- Manual sliders ---
+  function onSliderChange() {
+    var a = parseFloat(document.getElementById('alphaSlider').value);
+    var b = parseFloat(document.getElementById('betaSlider').value);
+    var g = parseFloat(document.getElementById('gammaSlider').value);
+    document.getElementById('alphaValue').textContent = a;
+    document.getElementById('betaValue').textContent = b;
+    document.getElementById('gammaValue').textContent = g;
+    updateOrientationDisplay(a, b, g, 'Manual');
+    updatePlanetPositions(a, b, g);
+  }
+  document.getElementById('alphaSlider').addEventListener('input', onSliderChange);
+  document.getElementById('betaSlider').addEventListener('input', onSliderChange);
+  document.getElementById('gammaSlider').addEventListener('input', onSliderChange);
 
-      try {
-        const response = await fetch(apiUrl);
-        const data = await response.json();
+  // --- Screen position calculation ---
+  function getScreenPosition(azimuth, altitude, alpha, beta, gamma, hFov, vFov) {
+    var azRad = THREE.MathUtils.degToRad(azimuth);
+    var altRad = THREE.MathUtils.degToRad(altitude);
+    var x = Math.cos(altRad) * Math.sin(azRad);
+    var y = Math.sin(altRad);
+    var z = Math.cos(altRad) * Math.cos(azRad);
+    var pos = new THREE.Vector3(x, y, z);
 
-        if (data && data.meanRadius) {
-          const distance = data.meanRadius;
-          console.log(`The distance to ${planetName} from Earth is approximately: ${distance} km`);
-          return distance;
-        } else {
-          console.log("Data not available or planet does not exist.");
-          return null;
-        }
-      } catch (error) {
-        console.error("Error fetching planet data:", error);
+    var euler = new THREE.Euler(
+      THREE.MathUtils.degToRad(beta),
+      THREE.MathUtils.degToRad(alpha),
+      THREE.MathUtils.degToRad(gamma),
+      'YXZ'
+    );
+    pos.applyEuler(euler);
+
+    if (pos.z <= 0.01) return null; // behind camera
+
+    var hFovRad = THREE.MathUtils.degToRad(hFov);
+    var vFovRad = THREE.MathUtils.degToRad(vFov);
+    var sx = (pos.x / pos.z) / Math.tan(hFovRad / 2);
+    var sy = (pos.y / pos.z) / Math.tan(vFovRad / 2);
+
+    var px = (sx * 0.5 + 0.5) * 100;
+    var py = (0.5 - sy * 0.5) * 100;
+
+    if (px < -20 || px > 120 || py < -20 || py > 120) return null;
+    return { x: px, y: py };
+  }
+
+  // --- Update planet positions ---
+  function updatePlanetPositions(alpha, beta, gamma) {
+    var el = document.getElementById('planetData');
+    if (!el || !el.innerText) return;
+    var planets = JSON.parse(el.innerText);
+    planets.forEach(function(p) {
+      var pos = getScreenPosition(p.azimuth, p.altitude, alpha, beta, gamma, 70, 56);
+      var div = document.getElementById('planet_' + p.name);
+      if (!div) return;
+      if (pos) {
+        div.style.left = pos.x + '%';
+        div.style.top = pos.y + '%';
+        div.style.display = 'block';
+      } else {
+        div.style.display = 'none';
       }
-    }
-
-    function sphericalToCartesian(azimuth, altitude) {
-      const az = THREE.MathUtils.degToRad(azimuth);
-      const alt = THREE.MathUtils.degToRad(altitude);
-      return new THREE.Vector3(
-          Math.cos(alt) * Math.sin(az),
-          Math.sin(alt),
-          Math.cos(alt) * Math.cos(az)
-      );
-    }
-
-    function applyDeviceRotation(vector, alpha, beta, gamma) {
-      const euler = new THREE.Euler(
-          THREE.MathUtils.degToRad(beta),
-          THREE.MathUtils.degToRad(alpha),
-          THREE.MathUtils.degToRad(gamma),
-          'YXZ'
-      );
-      const quaternion = new THREE.Quaternion().setFromEuler(euler);
-      return vector.applyQuaternion(quaternion);
-    }
-
-    function projectToScreen(deviceVector, hFov, vFov, width, height) {
-      const camera = new THREE.PerspectiveCamera(
-        vFov,
-        width / height,
-        0.1,
-        1000
-      );
-      camera.position.set(0, 0, 0);
-      camera.lookAt(new THREE.Vector3(0, 0, -1));
-      const projected = deviceVector.clone();
-      projected.project(camera);
-      const screenX = (projected.x + 1) / 2 * width;
-      const screenY = (-projected.y + 1) / 2 * height;
-      return {
-          x: screenX,
-          y: screenY,
-      };
-    }
-
-    function getScreenPosition(azimuth, altitude, alpha, beta, gamma, hFov, vFov) {
-      const azRad = THREE.MathUtils.degToRad(azimuth);
-      const altRad = THREE.MathUtils.degToRad(altitude);
-      const radius = 1;
-      const x = radius * Math.cos(altRad) * Math.sin(azRad);
-      const y = radius * Math.sin(altRad);
-      const z = radius * Math.cos(altRad) * Math.cos(azRad);
-      const planetPosition = new THREE.Vector3(x, y, z);
-
-      const euler = new THREE.Euler(
-          THREE.MathUtils.degToRad(beta),
-          THREE.MathUtils.degToRad(alpha),
-          THREE.MathUtils.degToRad(gamma),
-          'YXZ'
-      );
-
-      planetPosition.applyEuler(euler);
-
-      if (planetPosition.z <= 0.1) {
-        console.log('Planet is behind camera');
-        return null;
-      }
-
-      const hFovRad = THREE.MathUtils.degToRad(hFov);
-      const vFovRad = THREE.MathUtils.degToRad(vFov);
-
-      const scaleX = 1 / Math.tan(hFovRad / 2);
-      const scaleY = 1 / Math.tan(vFovRad / 2);
-
-      const screenX = (planetPosition.x / planetPosition.z) * scaleX;
-      const screenY = (planetPosition.y / planetPosition.z) * scaleY;
-
-      console.log(`Screen coordinates: screenX=${screenX.toFixed(3)}, screenY=${screenY.toFixed(3)}`);
-
-      const percentX = (screenX * 0.5 + 0.5) * 100;
-      const percentY = (0.5 - screenY * 0.5) * 100;
-
-      console.log(`Screen percentage: percentX=${percentX.toFixed(1)}%, percentY=${percentY.toFixed(1)}%`);
-
-      if (percentX < -10 || percentX > 110 || percentY < -10 || percentY > 110) {
-        console.log('Planet is outside screen bounds');
-        return null;
-      }
-      return { x: percentX, y: percentY };
-    }
-
-    function degreesToRadians(deg) {
-      return deg * Math.PI / 180;
-    }
-
-    function computeRotationMatrix(alpha, beta, gamma) {
-      const degToRad = Math.PI / 180;
-      const a = (alpha || 0) * degToRad;
-      const b = (beta || 0) * degToRad;
-      const c = (gamma || 0) * degToRad;
-
-      const cosA = Math.cos(a), sinA = Math.sin(a);
-      const cosB = Math.cos(b), sinB = Math.sin(b);
-      const cosC = Math.cos(c), sinC = Math.sin(c);
-
-      return [
-          [
-              cosA * cosC - sinA * sinB * sinC,
-              -sinA * cosB,
-              cosA * sinC + sinA * sinB * cosC
-          ],
-          [
-              sinA * cosC + cosA * sinB * sinC,
-              cosA * cosB,
-              sinA * sinC - cosA * sinB * cosC
-          ],
-          [
-              -cosB * sinC,
-              sinB,
-              cosB * cosC
-          ]
-      ];
-    }
-
-    function matrixVectorMultiply(m, v) {
-      return [
-          m[0][0] * v[0] + m[0][1] * v[1] + m[0][2] * v[2],
-          m[1][0] * v[0] + m[1][1] * v[1] + m[1][2] * v[2],
-          m[2][0] * v[0] + m[2][1] * v[1] + m[2][2] * v[2]
-      ];
-    }
-
-    function calculateScreenPosition(azimuth, altitude, alpha, beta, gamma, fovVertical,fovHorizontal) {
-      windowWidth = window.innerWidth;
-      windowHeight = window.innerHeight;
-      const azimuthRad = azimuth * Math.PI / 180;
-      const altitudeRad = altitude * Math.PI / 180;
-
-      const r = 1;
-      const x = r * Math.cos(altitudeRad) * Math.sin(azimuthRad);
-      const y = r * Math.sin(altitudeRad);
-      const z = r * Math.cos(altitudeRad) * Math.cos(azimuthRad);
-
-      const alphaRad = alpha * Math.PI / 180;
-      const betaRad = beta * Math.PI / 180;
-      const gammaRad = gamma * Math.PI / 180;
-
-      const Rz = [
-          [Math.cos(alphaRad), -Math.sin(alphaRad), 0],
-          [Math.sin(alphaRad), Math.cos(alphaRad), 0],
-          [0, 0, 1]
-      ];
-
-      const Rx = [
-          [1, 0, 0],
-          [0, Math.cos(betaRad), -Math.sin(betaRad)],
-          [0, Math.sin(betaRad), Math.cos(betaRad)]
-      ];
-
-      const Ry = [
-          [Math.cos(gammaRad), 0, Math.sin(gammaRad)],
-          [0, 1, 0],
-          [-Math.sin(gammaRad), 0, Math.cos(gammaRad)]
-      ];
-
-      const rotationMatrix = multiplyMatrices(multiplyMatrices(Rz, Ry), Rx);
-
-      const rotatedCoords = multiplyMatrixVector(rotationMatrix, [x, y, z]);
-
-      const xRot = rotatedCoords[0];
-      const yRot = rotatedCoords[1];
-      const zRot = rotatedCoords[2];
-
-      const fovVerticalRad = fovVertical * Math.PI / 180;
-      const fovHorizontalRad = fovHorizontal * Math.PI / 180;
-
-      const screenX = (xRot / zRot) * Math.tan(fovHorizontalRad / 2) * windowWidth / 2 + windowWidth / 2;
-      const screenY = -(yRot / zRot) * Math.tan(fovVerticalRad / 2) * windowHeight / 2 + windowHeight / 2;
-
-      return { x: screenX, y: screenY };
-    }
-
-    function multiplyMatrixVector(m, v) {
-      return [
-          m[0][0] * v[0] + m[0][1] * v[1] + m[0][2] * v[2],
-          m[1][0] * v[0] + m[1][1] * v[1] + m[1][2] * v[2],
-          m[2][0] * v[0] + m[2][1] * v[1] + m[2][2] * v[2]
-      ];
-    }
-
-    // Update planet positions based on device orientation
-    function updatePlanetPositions(alpha, beta, gamma) {
-      const planetDataElement = document.getElementById('planetData');
-      if (!planetDataElement || !planetDataElement.innerText) {
-          console.log('Planet data not yet loaded');
-          return;
-      }
-
-      const planets = JSON.parse(planetDataElement.innerText);
-      console.log('Updating positions for', planets.length, 'planets');
-      console.log('Device orientation:', { alpha, beta, gamma });
-
-      planets.forEach(planet => {
-          const { azimuth, altitude, meanradius } = planet;
-          console.log(`Planet ${planet.name}: azimuth=${azimuth}, altitude=${altitude}`);
-          const screenPos = getScreenPosition(azimuth, altitude, alpha, beta, gamma, 70, 56);
-          if (screenPos) {
-              const planetElement = document.getElementById(planet.name);
-              if (planetElement) {
-                  planetElement.style.left = `${screenPos.x}%`;
-                  planetElement.style.top = `${screenPos.y}%`;
-                  planetElement.style.display = 'block';
-                  console.log(`Positioned ${planet.name} at ${screenPos.x}%, ${screenPos.y}%`);
-              }
-          } else {
-              const planetElement = document.getElementById(planet.name);
-              if (planetElement) {
-                  planetElement.style.display = 'none';
-                  console.log(`${planet.name} is not visible`);
-              }
-          }
-      });
-    }
-
-    // Make updatePlanetPositions globally accessible for manual controls
-    window.updatePlanetPositions = updatePlanetPositions;
-
-    // Get user's latitude and longitude
-    console.log('Requesting geolocation...');
-    document.getElementById('orientation').innerHTML += 'Requesting location...<br>';
-
-    navigator.geolocation.getCurrentPosition(async function(position) {
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
-        console.log('Location obtained:', { latitude, longitude });
-        document.getElementById('orientation').innerHTML += `Location: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}<br>`;
-        fetchPlanetData(latitude, longitude);
-    }, function(error) {
-        console.error('Geolocation error:', error);
-        document.getElementById('orientation').innerHTML += 'Geolocation error: ' + error.message + ' (Using default location: New York)<br>';
-        fetchPlanetData(40.7128, -74.0060);
     });
+  }
 
-    async function fetchPlanetData(latitude, longitude) {
-      console.log('Starting planet data fetch for location:', latitude, longitude);
-      document.getElementById('orientation').innerHTML += `Fetching planet data for: ${latitude.toFixed(4)}, ${longitude.toFixed(4)}...<br>`;
+  // --- Create planet elements ---
+  function createPlanetElements(planets) {
+    var overlay = document.getElementById('planetOverlay');
+    if (!overlay) { setStatus('ERROR: planetOverlay not found'); return; }
 
-      try {
-          const visiblePlanetsUrl = `https://api.visibleplanets.dev/v3?latitude=${latitude}&longitude=${longitude}`;
-          console.log('Fetching from:', visiblePlanetsUrl);
-          document.getElementById('orientation').innerHTML += `API URL: ${visiblePlanetsUrl}<br>`;
+    // Keep planetData div, clear the rest
+    var dataDiv = document.getElementById('planetData');
+    overlay.innerHTML = '';
+    overlay.appendChild(dataDiv);
 
-          const response = await fetch(visiblePlanetsUrl);
-          console.log('Response status:', response.status);
-          document.getElementById('orientation').innerHTML += `Response status: ${response.status}<br>`;
+    var info = [];
+    planets.forEach(function(p, i) {
+      var div = document.createElement('div');
+      div.id = 'planet_' + p.name;
+      div.style.cssText = 'position:absolute;color:#fff;font-size:16px;font-weight:bold;' +
+        'text-shadow:1px 1px 3px #000;padding:6px 10px;background:rgba(255,0,0,0.7);' +
+        'border-radius:6px;border:2px solid yellow;z-index:100;pointer-events:none;' +
+        'left:50%;top:50%;display:block;transform:translate(-50%,-50%);';
+      div.textContent = p.name;
+      overlay.appendChild(div);
+      info.push((i+1) + '. ' + p.name + ' Az:' + p.azimuth.toFixed(1) + ' Alt:' + p.altitude.toFixed(1));
+    });
+    setStatus('Created ' + planets.length + ' planets: ' + info.join(', '));
+  }
 
-          if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-          }
+  // --- Fetch planet data ---
+  async function fetchPlanetData(lat, lon) {
+    setStatus('Fetching planets for ' + lat.toFixed(2) + ', ' + lon.toFixed(2));
+    try {
+      var resp = await fetch('https://api.visibleplanets.dev/v3?latitude=' + lat + '&longitude=' + lon);
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      var data = await resp.json();
+      if (!data.data || data.data.length === 0) throw new Error('No planets returned');
+      setStatus('API returned ' + data.data.length + ' planets');
 
-          const data = await response.json();
-          console.log('Planet data fetched successfully:', data);
-          console.log('Number of planets:', data.data ? data.data.length : 0);
-
-          document.getElementById('orientation').innerHTML += `Fetched ${data.data ? data.data.length : 0} planets from API<br>`;
-
-          if (!data.data || data.data.length === 0) {
-              console.log('No planets in response, using fallback');
-              throw new Error('No planets data received');
-          }
-
-          for (let planet of data.data) {
-              console.log('Processing planet:', planet.name);
-              const planetName = planet.name.toLowerCase();
-              const bodyUrl = `https://api.le-systeme-solaire.net/rest/bodies/${planetName}`;
-              console.log('Fetching planet details from:', bodyUrl);
-
-              try {
-                  const bodyResponse = await fetch(bodyUrl);
-                  const bodyData = await bodyResponse.json();
-                  planet.meanradius = bodyData.meanRadius || 'N/A';
-                  console.log(`${planet.name} radius: ${planet.meanradius}`);
-              } catch (bodyError) {
-                  console.error('Error fetching planet details for', planet.name, ':', bodyError);
-                  planet.meanradius = 'N/A';
-              }
-          }
-
-          document.getElementById('responseData').innerText = JSON.stringify(data, null, 2);
-          document.getElementById('planetData').innerText = JSON.stringify(data.data);
-          createPlanetElements(data.data);
-          console.log('Planet elements created, calling initial update');
-          updatePlanetPositions(0, 0, 0);
-
-      } catch (error) {
-          console.error('Error fetching planet data:', error);
-          document.getElementById('orientation').innerHTML += 'Error: ' + error.message + ' (Using fallback data)<br>';
-          console.log('Using fallback planet data');
-
-          const fallbackPlanets = [
-              { name: 'Venus', azimuth: 45, altitude: 30, meanradius: 6051 },
-              { name: 'Mars', azimuth: 120, altitude: 20, meanradius: 3389 },
-              { name: 'Jupiter', azimuth: 200, altitude: 45, meanradius: 69911 },
-              { name: 'Saturn', azimuth: 280, altitude: 15, meanradius: 58232 }
-          ];
-
-          document.getElementById('planetData').innerText = JSON.stringify(fallbackPlanets);
-          createPlanetElements(fallbackPlanets);
-          updatePlanetPositions(0, 0, 0);
-      }
-    }
-
-    function createPlanetElements(planets) {
-      console.log('Creating planet elements for', planets.length, 'planets');
-      const planetOverlay = document.getElementById('planetOverlay');
-      if (!planetOverlay) {
-          console.error('Planet overlay element not found');
-          return;
+      // Fetch radius for each planet
+      for (var i = 0; i < data.data.length; i++) {
+        try {
+          var br = await fetch('https://api.le-systeme-solaire.net/rest/bodies/' + data.data[i].name.toLowerCase());
+          var bd = await br.json();
+          data.data[i].meanradius = bd.meanRadius || 0;
+        } catch(e) { data.data[i].meanradius = 0; }
       }
 
-      planetOverlay.innerHTML = '<div id="planetData" style="display: none;"></div>';
-
-      let planetInfoHTML = '<strong style="color: #00ff00;">PLANETS LOADED:</strong><br>';
-      planets.forEach((planet, index) => {
-          planetInfoHTML += `<span style="color: white;">${index + 1}. ${planet.name}</span> - `;
-          planetInfoHTML += `<span style="color: yellow;">Az: ${planet.azimuth}°</span>, `;
-          planetInfoHTML += `<span style="color: cyan;">Alt: ${planet.altitude}°</span><br>`;
-      });
-      planetInfoHTML += `<strong style="color: #00ff00;">TOTAL: ${planets.length} planets</strong>`;
-
-      const currentOrientation = document.getElementById('orientation').innerHTML;
-      const baseText = currentOrientation.split('<br>')[0] + '<br>' +
-                      currentOrientation.split('<br>')[1] + '<br>' +
-                      currentOrientation.split('<br>')[2] + '<br>' +
-                      currentOrientation.split('<br>')[3];
-      document.getElementById('orientation').innerHTML = baseText + '<br><br>' + planetInfoHTML;
-
-      const debugPanel = document.createElement('div');
-      debugPanel.id = 'debugPanel';
-      debugPanel.style.position = 'fixed';
-      debugPanel.style.top = '60px';
-      debugPanel.style.right = '10px';
-      debugPanel.style.background = 'rgba(0,0,0,0.9)';
-      debugPanel.style.color = '#00ff00';
-      debugPanel.style.padding = '10px';
-      debugPanel.style.borderRadius = '5px';
-      debugPanel.style.fontSize = '12px';
-      debugPanel.style.zIndex = '1000';
-      debugPanel.style.maxWidth = '300px';
-      debugPanel.style.maxHeight = '200px';
-      debugPanel.style.overflow = 'auto';
-      debugPanel.style.border = '2px solid #00ff00';
-      debugPanel.innerHTML = '<strong>PLANET DEBUG INFO:</strong><br>';
-      planetOverlay.appendChild(debugPanel);
-
-      planets.forEach((planet, index) => {
-          console.log(`Creating element ${index + 1}/${planets.length} for ${planet.name}`);
-          const planetDiv = document.createElement('div');
-          planetDiv.id = planet.name;
-          planetDiv.style.position = 'absolute';
-          planetDiv.style.color = 'white';
-          planetDiv.style.fontSize = '28px';
-          planetDiv.style.fontWeight = 'bold';
-          planetDiv.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
-          planetDiv.style.padding = '8px 12px';
-          planetDiv.style.backgroundColor = 'rgba(255,0,0,0.7)';
-          planetDiv.style.borderRadius = '8px';
-          planetDiv.style.pointerEvents = 'none';
-          planetDiv.style.zIndex = '100';
-          planetDiv.style.border = '3px solid yellow';
-          planetDiv.innerText = planet.name;
-          planetDiv.style.display = 'block';
-          planetDiv.style.left = '50%';
-          planetDiv.style.top = '50%';
-          planetOverlay.appendChild(planetDiv);
-
-          debugPanel.innerHTML += `${planet.name}: Az=${planet.azimuth}°, Alt=${planet.altitude}°<br>`;
-
-          console.log(`Created planet element for ${planet.name}, total elements now: ${planetOverlay.children.length}`);
-      });
-
-      debugPanel.innerHTML += `<br><strong>Total planets: ${planets.length}</strong>`;
-      console.log('Planet overlay children count:', planetOverlay.children.length);
-      console.log('Planet elements created, visible at center screen');
+      document.getElementById('planetData').innerText = JSON.stringify(data.data);
+      document.getElementById('responseData').innerText = JSON.stringify(data, null, 2);
+      createPlanetElements(data.data);
+      updatePlanetPositions(0, 0, 0);
+    } catch(e) {
+      setStatus('API error: ' + e.message + ' - using fallback');
+      var fallback = [
+        { name: 'Venus', azimuth: 45, altitude: 30, meanradius: 6051 },
+        { name: 'Mars', azimuth: 120, altitude: 20, meanradius: 3389 },
+        { name: 'Jupiter', azimuth: 200, altitude: 45, meanradius: 69911 },
+        { name: 'Saturn', azimuth: 280, altitude: 15, meanradius: 58232 }
+      ];
+      document.getElementById('planetData').innerText = JSON.stringify(fallback);
+      createPlanetElements(fallback);
+      updatePlanetPositions(0, 0, 0);
     }
+  }
+
+  // --- Get location and start ---
+  setStatus('Requesting location...');
+  navigator.geolocation.getCurrentPosition(
+    function(pos) {
+      setStatus('Location: ' + pos.coords.latitude.toFixed(4) + ', ' + pos.coords.longitude.toFixed(4));
+      fetchPlanetData(pos.coords.latitude, pos.coords.longitude);
+    },
+    function(err) {
+      setStatus('Location error: ' + err.message + ' - using New York');
+      fetchPlanetData(40.7128, -74.0060);
     }
-});
+  );
+})();
 </script>
-<div id="orientation" style="background-color: #f0f0f0; padding: 10px;"></div>
-
-<!-- Manual Orientation Controls -->
-<div style="position: fixed; bottom: 10px; left: 10px; background: rgba(255,255,255,0.9); padding: 10px; border-radius: 8px; z-index: 1000;">
-    <div style="margin-bottom: 5px;"><strong>Manual Orientation Controls</strong></div>
-    <div style="margin-bottom: 5px;">
-        <label>Alpha (Compass): <span id="alphaValue">0</span>°</label><br>
-        <input type="range" id="alphaSlider" min="0" max="360" value="0" style="width: 200px;">
-    </div>
-    <div style="margin-bottom: 5px;">
-        <label>Beta (Tilt): <span id="betaValue">0</span>°</label><br>
-        <input type="range" id="betaSlider" min="-180" max="180" value="0" style="width: 200px;">
-    </div>
-    <div style="margin-bottom: 5px;">
-        <label>Gamma (Roll): <span id="gammaValue">0</span>°</label><br>
-        <input type="range" id="gammaSlider" min="-90" max="90" value="0" style="width: 200px;">
-    </div>
-</div>
-
-<script>
-// Manual orientation controls
-document.getElementById('alphaSlider').addEventListener('input', function(e) {
-    const alpha = parseFloat(e.target.value);
-    document.getElementById('alphaValue').textContent = alpha;
-    const beta = parseFloat(document.getElementById('betaSlider').value);
-    const gamma = parseFloat(document.getElementById('gammaSlider').value);
-    // Update orientation display without adding new lines
-    const orientationDiv = document.getElementById('orientation');
-    const baseText = orientationDiv.innerHTML.split('<br>')[0] + '<br>' +
-                      orientationDiv.innerHTML.split('<br>')[1] + '<br>' +
-                      orientationDiv.innerHTML.split('<br>')[2] + '<br>' +
-                      orientationDiv.innerHTML.split('<br>')[3];
-    orientationDiv.innerHTML = baseText + `<br>Orientation: A:${alpha}° B:${beta}° G:${gamma}° (Manual)`;
-    if (window.updatePlanetPositions) {
-        window.updatePlanetPositions(alpha, beta, gamma);
-    }
-});
-
-document.getElementById('betaSlider').addEventListener('input', function(e) {
-    const beta = parseFloat(e.target.value);
-    document.getElementById('betaValue').textContent = beta;
-    const alpha = parseFloat(document.getElementById('alphaSlider').value);
-    const gamma = parseFloat(document.getElementById('gammaSlider').value);
-    // Update orientation display without adding new lines
-    const orientationDiv = document.getElementById('orientation');
-    const baseText = orientationDiv.innerHTML.split('<br>')[0] + '<br>' +
-                      orientationDiv.innerHTML.split('<br>')[1] + '<br>' +
-                      orientationDiv.innerHTML.split('<br>')[2] + '<br>' +
-                      orientationDiv.innerHTML.split('<br>')[3];
-    orientationDiv.innerHTML = baseText + `<br>Orientation: A:${alpha}° B:${beta}° G:${gamma}° (Manual)`;
-    if (window.updatePlanetPositions) {
-        window.updatePlanetPositions(alpha, beta, gamma);
-    }
-});
-
-document.getElementById('gammaSlider').addEventListener('input', function(e) {
-    const gamma = parseFloat(e.target.value);
-    document.getElementById('gammaValue').textContent = gamma;
-    const alpha = parseFloat(document.getElementById('alphaSlider').value);
-    const beta = parseFloat(document.getElementById('betaSlider').value);
-    // Update orientation display without adding new lines
-    const orientationDiv = document.getElementById('orientation');
-    const baseText = orientationDiv.innerHTML.split('<br>')[0] + '<br>' +
-                      orientationDiv.innerHTML.split('<br>')[1] + '<br>' +
-                      orientationDiv.innerHTML.split('<br>')[2] + '<br>' +
-                      orientationDiv.innerHTML.split('<br>')[3];
-    orientationDiv.innerHTML = baseText + `<br>Orientation: A:${alpha}° B:${beta}° G:${gamma}° (Manual)`;
-    if (window.updatePlanetPositions) {
-        window.updatePlanetPositions(alpha, beta, gamma);
-    }
-});
-</script>
-
-<video id="video" autoplay width=100% height=100%></video>
-<div id="planetOverlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
-    <!-- Planet positions will be updated here -->
-    <div id="planetData" style="display: none;"></div>
-</div>
-
-<pre id="responseData" style="background-color: #f0f0f0; padding: 10px;"></pre>
 """
 
-# Embed the JavaScript and HTML into the Streamlit app
-components.html(orientation_js, height=1600)
+components.html(orientation_js, height=800)
